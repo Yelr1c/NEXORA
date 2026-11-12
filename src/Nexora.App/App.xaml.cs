@@ -58,16 +58,9 @@ public partial class App : Application
 
         var settings = GetService<ISettingsService>();
         settings.LoadAsync().GetAwaiter().GetResult();
-        // Pin the application theme so resources resolved from code match the chosen theme.
-        // Runtime theme switches are applied to the window root by ThemeService.
-        if (settings.Current.Theme != AppTheme.System)
-        {
-            RequestedTheme = settings.Current.Theme == AppTheme.Light ? ApplicationTheme.Light : ApplicationTheme.Dark;
-        }
-
-        // Accent palette must be in place before any control is created.
-        ThemeService.ApplyAccentResources(Resources, settings.Current.AccentColor);
         Motion.Enabled = settings.Current.AnimationsEnabled;
+        // Note: Application.Resources must not be touched in the constructor (WinUI throws E_UNEXPECTED);
+        // the accent palette is applied in OnLaunched, before any window or control is created.
     }
 
     public static IServiceProvider Services { get; private set; } = null!;
@@ -103,6 +96,7 @@ public partial class App : Application
     private void OnLaunchedCore()
     {
         var settings = GetService<ISettingsService>();
+        ThemeService.ApplyAccentResources(Resources, settings.Current.AccentColor);
         var dispatcher = GetService<UiDispatcher>();
         _window = GetService<MainWindow>();
         dispatcher.Initialize(_window.DispatcherQueue);

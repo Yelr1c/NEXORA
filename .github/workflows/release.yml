@@ -27,6 +27,23 @@ jobs:
         shell: pwsh
         run: ./build/publish-unpackaged.ps1 -Platform x64
 
+      - name: Verify NEXORA starts
+        shell: pwsh
+        run: |
+          $data = Join-Path $env:LOCALAPPDATA 'NEXORA'
+          Remove-Item (Join-Path $data 'startup-error.txt') -ErrorAction SilentlyContinue
+          $p = Start-Process -FilePath (Resolve-Path artifacts/portable/win-x64/NEXORA.exe) -PassThru
+          Start-Sleep -Seconds 30
+          $p.Refresh()
+          $crash = Join-Path $data 'startup-error.txt'
+          if (Test-Path $crash) { Get-Content $crash; throw 'NEXORA reported a startup error' }
+          if ($p.HasExited) { throw "NEXORA exited during startup (code $($p.ExitCode))" }
+          if (-not $p.MainWindowTitle) { throw 'NEXORA is running but has no visible window' }
+          $errors = Get-ChildItem (Join-Path $data 'Logs') -Filter *.log | Get-Content | Select-String '"level":"(Error|Critical)"'
+          if ($errors) { $errors; throw 'NEXORA logged errors during startup' }
+          "NEXORA started: window '$($p.MainWindowTitle)', $([math]::Round($p.WorkingSet64/1MB)) MB"
+          Stop-Process -Id $p.Id -Force
+
       - name: Install Inno Setup
         run: choco install innosetup --no-progress -y
 

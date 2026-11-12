@@ -45,6 +45,23 @@ jobs:
             Select-Object -First 10 | ForEach-Object { "[$($_.ProviderName)] $($_.Message)" }
           Copy-Item (Join-Path $data '*') smoke -Recurse -ErrorAction SilentlyContinue
           Stop-Process -Name NEXORA -Force -ErrorAction SilentlyContinue
+      - name: Verify NEXORA starts (strict)
+        shell: pwsh
+        run: |
+          $data = Join-Path $env:LOCALAPPDATA 'NEXORA'
+          Remove-Item (Join-Path $data 'startup-error.txt') -ErrorAction SilentlyContinue
+          $p = Start-Process -FilePath (Resolve-Path artifacts/portable/win-x64/NEXORA.exe) -PassThru
+          Start-Sleep -Seconds 30
+          $p.Refresh()
+          $crash = Join-Path $data 'startup-error.txt'
+          if (Test-Path $crash) { Get-Content $crash; throw 'NEXORA reported a startup error' }
+          if ($p.HasExited) { throw "NEXORA exited during startup (code $($p.ExitCode))" }
+          if (-not $p.MainWindowTitle) { throw 'NEXORA is running but has no visible window' }
+          $errors = Get-ChildItem (Join-Path $data 'Logs') -Filter *.log | Get-Content | Select-String '"level":"(Error|Critical)"'
+          if ($errors) { $errors; throw 'NEXORA logged errors during startup' }
+          "NEXORA started: window '$($p.MainWindowTitle)', $([math]::Round($p.WorkingSet64/1MB)) MB"
+          Stop-Process -Id $p.Id -Force
+
       - uses: actions/upload-artifact@v4
         if: always()
         with:
