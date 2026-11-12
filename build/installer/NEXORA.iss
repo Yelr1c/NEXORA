@@ -31,7 +31,7 @@ UninstallDisplayName=NEXORA
 Compression=lzma2/ultra64
 SolidCompression=yes
 WizardStyle=modern
-CloseApplications=yes
+CloseApplications=force
 RestartApplications=no
 
 [Languages]
@@ -54,3 +54,14 @@ Filename: "{app}\NEXORA.exe"; Description: "Launch NEXORA"; Flags: nowait postin
 [UninstallRun]
 ; Remove the "start with Windows" entry if the user enabled it.
 Filename: "{sys}\reg.exe"; Parameters: "delete HKCU\Software\Microsoft\Windows\CurrentVersion\Run /v NEXORA /f"; Flags: runhidden; RunOnceId: "RemoveRunKey"
+
+[Code]
+// Make sure no NEXORA instance (visible, in the tray, or stuck) is running before files are replaced.
+function PrepareToInstall(var NeedsRestart: Boolean): String;
+var
+  ResultCode: Integer;
+begin
+  Exec(ExpandConstant('{sys}\taskkill.exe'), '/F /T /IM NEXORA.exe', '', SW_HIDE, ewWaitUntilTerminated, ResultCode);
+  Sleep(500);
+  Result := '';
+end;
