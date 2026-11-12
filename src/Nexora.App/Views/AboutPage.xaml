@@ -1,0 +1,55 @@
+<Page
+    x:Class="Nexora.App.Views.AboutPage"
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:controls="using:Nexora.App.Controls"
+    Background="Transparent">
+
+    <ScrollViewer VerticalScrollBarVisibility="Auto">
+        <StackPanel Padding="32,20,32,32" Spacing="16" MaxWidth="980" HorizontalAlignment="Left">
+            <Border Style="{StaticResource HeroCardStyle}">
+                <StackPanel Orientation="Horizontal" Spacing="24">
+                    <controls:NexoraLogo Width="84" Height="84" />
+                    <StackPanel VerticalAlignment="Center" Spacing="4">
+                        <TextBlock Text="NEXORA" FontSize="30" FontWeight="SemiBold" CharacterSpacing="300" />
+                        <TextBlock Text="Optimize. Measure. Dominate." Style="{StaticResource PageSubtitleStyle}" />
+                        <TextBlock FontSize="13">
+                            <Run Text="Version " Foreground="{ThemeResource NexoraSubtleTextBrush}" />
+                            <Run Text="{x:Bind ViewModel.Version}" FontWeight="SemiBold" />
+                        </TextBlock>
+                    </StackPanel>
+                </StackPanel>
+            </Border>
+
+            <Border Style="{StaticResource CardStyle}">
+                <StackPanel Spacing="12">
+                    <TextBlock Style="{StaticResource SectionTitleStyle}" Text="System" />
+                    <controls:StatTile Label="Platform" Value="{x:Bind ViewModel.Platform}" />
+                    <controls:StatTile Label="Runtime" Value="{x:Bind ViewModel.Runtime}" />
+                    <controls:StatTile Label="Privileges" Value="{x:Bind ViewModel.Elevation}" />
+                    <controls:StatTile Label="Data folder" Value="{x:Bind ViewModel.DataPath}" />
+                </StackPanel>
+            </Border>
+
+            <Border Style="{StaticResource CardStyle}">
+                <StackPanel Spacing="10">
+                    <TextBlock Style="{StaticResource SectionTitleStyle}" Text="Privacy" />
+                    <TextBlock Style="{StaticResource BodyStyle}" Text="NEXORA works completely offline. It collects no personal information, sends no telemetry and never downloads or runs external files. The only network traffic it creates is the latency probes you can see on the Network page." />
+                    <TextBlock Style="{StaticResource BodyStyle}" Text="Logs are stored locally and have user names, profile paths and e-mail addresses removed." />
+                </StackPanel>
+            </Border>
+
+            <Border Style="{StaticResource CardStyle}">
+                <StackPanel Spacing="10">
+                    <TextBlock Style="{StaticResource SectionTitleStyle}" Text="Our promise" />
+                    <TextBlock Style="{StaticResource BodyStyle}" Text="• Every optimization is explained, backed up before it is applied and can be undone." />
+                    <TextBlock Style="{StaticResource BodyStyle}" Text="• Security software, Windows Update and critical Windows services are never disabled." />
+                    <TextBlock Style="{StaticResource BodyStyle}" Text="• Measurements are real. When a sensor is not available, NEXORA says so instead of guessing." />
+                    <TextBlock Style="{StaticResource BodyStyle}" Text="• No optimization can guarantee more FPS or lower ping; NEXORA shows you measured results so you can judge for yourself." />
+                </StackPanel>
+            </Border>
+
+            <TextBlock Style="{StaticResource BodySubtleStyle}" FontSize="12" Text="© 2026 NEXORA. Built with .NET, WinUI 3 and the Windows App SDK." />
+        </StackPanel>
+    </ScrollViewer>
+</Page>

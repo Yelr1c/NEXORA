@@ -1,0 +1,31 @@
+name: CI
+
+on:
+  push:
+  pull_request:
+
+jobs:
+  build:
+    runs-on: windows-latest
+    strategy:
+      matrix:
+        platform: [x64, ARM64]
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-dotnet@v4
+        with:
+          global-json-file: global.json
+      - name: Test core logic
+        if: matrix.platform == 'x64'
+        run: dotnet test tests/Nexora.Core.Tests/Nexora.Core.Tests.csproj -c Release
+      - name: Build application
+        run: dotnet build src/Nexora.App/Nexora.App.csproj -c Release -p:Platform=${{ matrix.platform }} -p:WindowsPackageType=None
+      - name: Publish portable build
+        if: matrix.platform == 'x64'
+        shell: pwsh
+        run: ./build/publish-unpackaged.ps1 -Platform x64
+      - uses: actions/upload-artifact@v4
+        if: matrix.platform == 'x64'
+        with:
+          name: NEXORA-portable-win-x64
+          path: artifacts/NEXORA-portable-win-x64.zip

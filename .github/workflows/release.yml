@@ -1,0 +1,56 @@
+name: Release
+
+# Builds NEXORA on Windows and publishes a one-click installer (NEXORA-Setup.exe)
+# plus a portable zip as a GitHub Release.
+on:
+  workflow_dispatch:
+  push:
+    tags: ['v*']
+
+permissions:
+  contents: write
+
+jobs:
+  release:
+    runs-on: windows-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-dotnet@v4
+        with:
+          global-json-file: global.json
+
+      - name: Unit tests
+        run: dotnet test tests/Nexora.Core.Tests/Nexora.Core.Tests.csproj -c Release
+
+      - name: Publish self-contained build
+        shell: pwsh
+        run: ./build/publish-unpackaged.ps1 -Platform x64
+
+      - name: Install Inno Setup
+        run: choco install innosetup --no-progress -y
+
+      - name: Build installer
+        shell: pwsh
+        run: |
+          $version = if ($env:GITHUB_REF_TYPE -eq 'tag') { $env:GITHUB_REF_NAME.TrimStart('v') } else { '1.0.0' }
+          & "${env:ProgramFiles(x86)}\Inno Setup 6\ISCC.exe" "/DAppVersion=$version" build\installer\NEXORA.iss
+          if ($LASTEXITCODE) { throw 'Installer build failed' }
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: NEXORA
+          path: |
+            artifacts/NEXORA-Setup.exe
+            artifacts/NEXORA-portable-win-x64.zip
+
+      - name: Publish GitHub Release
+        shell: pwsh
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          $tag = if ($env:GITHUB_REF_TYPE -eq 'tag') { $env:GITHUB_REF_NAME } else { 'latest' }
+          gh release delete $tag --yes --cleanup-tag 2>$null
+          gh release create $tag artifacts/NEXORA-Setup.exe artifacts/NEXORA-portable-win-x64.zip `
+            --title "NEXORA $tag" `
+            --notes "Download **NEXORA-Setup.exe**, double-click, done. No admin rights or extra downloads needed. Windows may show a SmartScreen notice for new unsigned apps: click *More info* → *Run anyway*."

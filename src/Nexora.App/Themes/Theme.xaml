@@ -1,0 +1,180 @@
+<ResourceDictionary
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:helpers="using:Nexora.App.Helpers">
+
+    <ResourceDictionary.ThemeDictionaries>
+        <ResourceDictionary x:Key="Dark">
+            <SolidColorBrush x:Key="NexoraWindowBackgroundBrush" Color="#0A0E14" />
+            <SolidColorBrush x:Key="NexoraPaneBrush" Color="#08FFFFFF" />
+            <SolidColorBrush x:Key="NexoraCardBrush" Color="#0FFFFFFF" />
+            <SolidColorBrush x:Key="NexoraCardStrongBrush" Color="#17FFFFFF" />
+            <SolidColorBrush x:Key="NexoraCardBorderBrush" Color="#16FFFFFF" />
+            <SolidColorBrush x:Key="NexoraCardBorderHoverBrush" Color="#3D1FB6FF" />
+            <SolidColorBrush x:Key="NexoraDividerBrush" Color="#14FFFFFF" />
+            <SolidColorBrush x:Key="NexoraTextBrush" Color="#F2F5F8" />
+            <SolidColorBrush x:Key="NexoraSubtleTextBrush" Color="#9AA6B4" />
+            <SolidColorBrush x:Key="NexoraChipBrush" Color="#12FFFFFF" />
+            <LinearGradientBrush x:Key="NexoraHeroBrush" StartPoint="0,0" EndPoint="1,1">
+                <GradientStop Offset="0" Color="#261FB6FF" />
+                <GradientStop Offset="0.55" Color="#0D7C6CFF" />
+                <GradientStop Offset="1" Color="#05FFFFFF" />
+            </LinearGradientBrush>
+        </ResourceDictionary>
+        <ResourceDictionary x:Key="Light">
+            <SolidColorBrush x:Key="NexoraWindowBackgroundBrush" Color="#F4F6F9" />
+            <SolidColorBrush x:Key="NexoraPaneBrush" Color="#06000000" />
+            <SolidColorBrush x:Key="NexoraCardBrush" Color="#B3FFFFFF" />
+            <SolidColorBrush x:Key="NexoraCardStrongBrush" Color="#E6FFFFFF" />
+            <SolidColorBrush x:Key="NexoraCardBorderBrush" Color="#14000000" />
+            <SolidColorBrush x:Key="NexoraCardBorderHoverBrush" Color="#661FB6FF" />
+            <SolidColorBrush x:Key="NexoraDividerBrush" Color="#12000000" />
+            <SolidColorBrush x:Key="NexoraTextBrush" Color="#101820" />
+            <SolidColorBrush x:Key="NexoraSubtleTextBrush" Color="#5B6675" />
+            <SolidColorBrush x:Key="NexoraChipBrush" Color="#0C000000" />
+            <LinearGradientBrush x:Key="NexoraHeroBrush" StartPoint="0,0" EndPoint="1,1">
+                <GradientStop Offset="0" Color="#331FB6FF" />
+                <GradientStop Offset="0.55" Color="#147C6CFF" />
+                <GradientStop Offset="1" Color="#08FFFFFF" />
+            </LinearGradientBrush>
+        </ResourceDictionary>
+        <ResourceDictionary x:Key="HighContrast">
+            <SolidColorBrush x:Key="NexoraWindowBackgroundBrush" Color="{ThemeResource SystemColorWindowColor}" />
+            <SolidColorBrush x:Key="NexoraPaneBrush" Color="{ThemeResource SystemColorWindowColor}" />
+            <SolidColorBrush x:Key="NexoraCardBrush" Color="{ThemeResource SystemColorWindowColor}" />
+            <SolidColorBrush x:Key="NexoraCardStrongBrush" Color="{ThemeResource SystemColorWindowColor}" />
+            <SolidColorBrush x:Key="NexoraCardBorderBrush" Color="{ThemeResource SystemColorWindowTextColor}" />
+            <SolidColorBrush x:Key="NexoraCardBorderHoverBrush" Color="{ThemeResource SystemColorHighlightColor}" />
+            <SolidColorBrush x:Key="NexoraDividerBrush" Color="{ThemeResource SystemColorWindowTextColor}" />
+            <SolidColorBrush x:Key="NexoraTextBrush" Color="{ThemeResource SystemColorWindowTextColor}" />
+            <SolidColorBrush x:Key="NexoraSubtleTextBrush" Color="{ThemeResource SystemColorWindowTextColor}" />
+            <SolidColorBrush x:Key="NexoraChipBrush" Color="{ThemeResource SystemColorWindowColor}" />
+            <SolidColorBrush x:Key="NexoraHeroBrush" Color="{ThemeResource SystemColorWindowColor}" />
+        </ResourceDictionary>
+    </ResourceDictionary.ThemeDictionaries>
+
+    <!-- Theme-independent brushes (updated at runtime by ThemeService for the accent). -->
+    <SolidColorBrush x:Key="NexoraAccentBrush" Color="#1FB6FF" />
+    <SolidColorBrush x:Key="NexoraAccentSoftBrush" Color="#331FB6FF" />
+    <SolidColorBrush x:Key="NexoraSecondaryAccentBrush" Color="#7C6CFF" />
+    <SolidColorBrush x:Key="NexoraGoodBrush" Color="#2BD07F" />
+    <SolidColorBrush x:Key="NexoraWarningBrush" Color="#F5B83D" />
+    <SolidColorBrush x:Key="NexoraProblemBrush" Color="#FF5C66" />
+    <SolidColorBrush x:Key="NexoraNeutralBrush" Color="#8A94A6" />
+    <SolidColorBrush x:Key="NexoraGpuBrush" Color="#7C6CFF" />
+    <SolidColorBrush x:Key="NexoraRamBrush" Color="#00C2A8" />
+    <SolidColorBrush x:Key="NexoraFpsBrush" Color="#2BD07F" />
+
+    <helpers:StatusLevelToBrushConverter x:Key="StatusBrush" />
+    <helpers:BoolToOpacityConverter x:Key="EnabledOpacity" />
+
+    <FontFamily x:Key="NexoraIconFont">Segoe Fluent Icons,Segoe MDL2 Assets</FontFamily>
+
+    <Style x:Key="CardStyle" TargetType="Border">
+        <Setter Property="Background" Value="{ThemeResource NexoraCardBrush}" />
+        <Setter Property="BorderBrush" Value="{ThemeResource NexoraCardBorderBrush}" />
+        <Setter Property="BorderThickness" Value="1" />
+        <Setter Property="CornerRadius" Value="12" />
+        <Setter Property="Padding" Value="20" />
+    </Style>
+
+    <Style x:Key="HeroCardStyle" TargetType="Border" BasedOn="{StaticResource CardStyle}">
+        <Setter Property="Background" Value="{ThemeResource NexoraHeroBrush}" />
+        <Setter Property="Padding" Value="28" />
+    </Style>
+
+    <Style x:Key="InsetStyle" TargetType="Border">
+        <Setter Property="Background" Value="{ThemeResource NexoraChipBrush}" />
+        <Setter Property="CornerRadius" Value="8" />
+        <Setter Property="Padding" Value="12,10" />
+    </Style>
+
+    <Style x:Key="ChipStyle" TargetType="Border">
+        <Setter Property="Background" Value="{ThemeResource NexoraChipBrush}" />
+        <Setter Property="BorderBrush" Value="{ThemeResource NexoraCardBorderBrush}" />
+        <Setter Property="BorderThickness" Value="1" />
+        <Setter Property="CornerRadius" Value="11" />
+        <Setter Property="Padding" Value="10,3" />
+        <Setter Property="VerticalAlignment" Value="Center" />
+    </Style>
+
+    <Style x:Key="PageTitleStyle" TargetType="TextBlock">
+        <Setter Property="FontSize" Value="26" />
+        <Setter Property="FontWeight" Value="SemiBold" />
+        <Setter Property="Foreground" Value="{ThemeResource NexoraTextBrush}" />
+    </Style>
+
+    <Style x:Key="PageSubtitleStyle" TargetType="TextBlock">
+        <Setter Property="FontSize" Value="14" />
+        <Setter Property="Foreground" Value="{ThemeResource NexoraSubtleTextBrush}" />
+        <Setter Property="TextWrapping" Value="WrapWholeWords" />
+    </Style>
+
+    <Style x:Key="SectionTitleStyle" TargetType="TextBlock">
+        <Setter Property="FontSize" Value="16" />
+        <Setter Property="FontWeight" Value="SemiBold" />
+        <Setter Property="Foreground" Value="{ThemeResource NexoraTextBrush}" />
+    </Style>
+
+    <Style x:Key="CardLabelStyle" TargetType="TextBlock">
+        <Setter Property="FontSize" Value="11" />
+        <Setter Property="FontWeight" Value="SemiBold" />
+        <Setter Property="CharacterSpacing" Value="90" />
+        <Setter Property="Foreground" Value="{ThemeResource NexoraSubtleTextBrush}" />
+    </Style>
+
+    <Style x:Key="MetricValueStyle" TargetType="TextBlock">
+        <Setter Property="FontSize" Value="30" />
+        <Setter Property="FontWeight" Value="SemiBold" />
+        <Setter Property="Foreground" Value="{ThemeResource NexoraTextBrush}" />
+    </Style>
+
+    <Style x:Key="SmallMetricValueStyle" TargetType="TextBlock">
+        <Setter Property="FontSize" Value="18" />
+        <Setter Property="FontWeight" Value="SemiBold" />
+        <Setter Property="Foreground" Value="{ThemeResource NexoraTextBrush}" />
+        <Setter Property="TextTrimming" Value="CharacterEllipsis" />
+    </Style>
+
+    <Style x:Key="BodySubtleStyle" TargetType="TextBlock">
+        <Setter Property="FontSize" Value="13" />
+        <Setter Property="Foreground" Value="{ThemeResource NexoraSubtleTextBrush}" />
+        <Setter Property="TextWrapping" Value="WrapWholeWords" />
+    </Style>
+
+    <Style x:Key="BodyStyle" TargetType="TextBlock">
+        <Setter Property="FontSize" Value="14" />
+        <Setter Property="Foreground" Value="{ThemeResource NexoraTextBrush}" />
+        <Setter Property="TextWrapping" Value="WrapWholeWords" />
+    </Style>
+
+    <Style x:Key="IconStyle" TargetType="FontIcon">
+        <Setter Property="FontFamily" Value="{StaticResource NexoraIconFont}" />
+        <Setter Property="FontSize" Value="16" />
+    </Style>
+
+    <Style x:Key="HeroButtonStyle" TargetType="Button" BasedOn="{StaticResource AccentButtonStyle}">
+        <Setter Property="Padding" Value="32,12" />
+        <Setter Property="CornerRadius" Value="22" />
+        <Setter Property="FontSize" Value="14" />
+        <Setter Property="FontWeight" Value="SemiBold" />
+        <Setter Property="CharacterSpacing" Value="60" />
+    </Style>
+
+    <Style x:Key="PrimaryButtonStyle" TargetType="Button" BasedOn="{StaticResource AccentButtonStyle}">
+        <Setter Property="Padding" Value="18,8" />
+        <Setter Property="CornerRadius" Value="8" />
+    </Style>
+
+    <Style x:Key="SecondaryButtonStyle" TargetType="Button" BasedOn="{StaticResource DefaultButtonStyle}">
+        <Setter Property="Padding" Value="16,8" />
+        <Setter Property="CornerRadius" Value="8" />
+    </Style>
+
+    <Style x:Key="ProgressStyle" TargetType="ProgressBar">
+        <Setter Property="Height" Value="4" />
+        <Setter Property="MinHeight" Value="4" />
+        <Setter Property="CornerRadius" Value="2" />
+        <Setter Property="Maximum" Value="100" />
+    </Style>
+</ResourceDictionary>

@@ -1,0 +1,84 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio Version 17
+VisualStudioVersion = 17.14.0.0
+MinimumVisualStudioVersion = 10.0.40219.1
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Nexora.App", "src\Nexora.App\Nexora.App.csproj", "{6B1C2A57-2E4D-4C8B-9A61-0E5F1B7D3A01}"
+EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Nexora.Core", "src\Nexora.Core\Nexora.Core.csproj", "{0C7E4B2F-8A3D-4E61-B5C9-3F2A6D8E1B02}"
+EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Nexora.Platform.Windows", "src\Nexora.Platform.Windows\Nexora.Platform.Windows.csproj", "{4D2F8A61-1B3C-4E7D-9F05-6A8C2E4B7D03}"
+EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Nexora.Core.Tests", "tests\Nexora.Core.Tests\Nexora.Core.Tests.csproj", "{8E5A3C17-6F2B-4D9A-A1E3-7B4C9D2F5E04}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "src", "src", "{A1B2C3D4-0001-4000-8000-000000000001}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "tests", "tests", "{A1B2C3D4-0002-4000-8000-000000000002}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution Items", "{A1B2C3D4-0003-4000-8000-000000000003}"
+	ProjectSection(SolutionItems) = preProject
+		Directory.Build.props = Directory.Build.props
+		Directory.Packages.props = Directory.Packages.props
+		global.json = global.json
+		README.md = README.md
+		.editorconfig = .editorconfig
+	EndProjectSection
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|x64 = Debug|x64
+		Debug|ARM64 = Debug|ARM64
+		Release|x64 = Release|x64
+		Release|ARM64 = Release|ARM64
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{6B1C2A57-2E4D-4C8B-9A61-0E5F1B7D3A01}.Debug|x64.ActiveCfg = Debug|x64
+		{6B1C2A57-2E4D-4C8B-9A61-0E5F1B7D3A01}.Debug|x64.Build.0 = Debug|x64
+		{6B1C2A57-2E4D-4C8B-9A61-0E5F1B7D3A01}.Debug|x64.Deploy.0 = Debug|x64
+		{6B1C2A57-2E4D-4C8B-9A61-0E5F1B7D3A01}.Debug|ARM64.ActiveCfg = Debug|ARM64
+		{6B1C2A57-2E4D-4C8B-9A61-0E5F1B7D3A01}.Debug|ARM64.Build.0 = Debug|ARM64
+		{6B1C2A57-2E4D-4C8B-9A61-0E5F1B7D3A01}.Debug|ARM64.Deploy.0 = Debug|ARM64
+		{6B1C2A57-2E4D-4C8B-9A61-0E5F1B7D3A01}.Release|x64.ActiveCfg = Release|x64
+		{6B1C2A57-2E4D-4C8B-9A61-0E5F1B7D3A01}.Release|x64.Build.0 = Release|x64
+		{6B1C2A57-2E4D-4C8B-9A61-0E5F1B7D3A01}.Release|x64.Deploy.0 = Release|x64
+		{6B1C2A57-2E4D-4C8B-9A61-0E5F1B7D3A01}.Release|ARM64.ActiveCfg = Release|ARM64
+		{6B1C2A57-2E4D-4C8B-9A61-0E5F1B7D3A01}.Release|ARM64.Build.0 = Release|ARM64
+		{6B1C2A57-2E4D-4C8B-9A61-0E5F1B7D3A01}.Release|ARM64.Deploy.0 = Release|ARM64
+		{0C7E4B2F-8A3D-4E61-B5C9-3F2A6D8E1B02}.Debug|x64.ActiveCfg = Debug|Any CPU
+		{0C7E4B2F-8A3D-4E61-B5C9-3F2A6D8E1B02}.Debug|x64.Build.0 = Debug|Any CPU
+		{0C7E4B2F-8A3D-4E61-B5C9-3F2A6D8E1B02}.Debug|ARM64.ActiveCfg = Debug|Any CPU
+		{0C7E4B2F-8A3D-4E61-B5C9-3F2A6D8E1B02}.Debug|ARM64.Build.0 = Debug|Any CPU
+		{0C7E4B2F-8A3D-4E61-B5C9-3F2A6D8E1B02}.Release|x64.ActiveCfg = Release|Any CPU
+		{0C7E4B2F-8A3D-4E61-B5C9-3F2A6D8E1B02}.Release|x64.Build.0 = Release|Any CPU
+		{0C7E4B2F-8A3D-4E61-B5C9-3F2A6D8E1B02}.Release|ARM64.ActiveCfg = Release|Any CPU
+		{0C7E4B2F-8A3D-4E61-B5C9-3F2A6D8E1B02}.Release|ARM64.Build.0 = Release|Any CPU
+		{4D2F8A61-1B3C-4E7D-9F05-6A8C2E4B7D03}.Debug|x64.ActiveCfg = Debug|Any CPU
+		{4D2F8A61-1B3C-4E7D-9F05-6A8C2E4B7D03}.Debug|x64.Build.0 = Debug|Any CPU
+		{4D2F8A61-1B3C-4E7D-9F05-6A8C2E4B7D03}.Debug|ARM64.ActiveCfg = Debug|Any CPU
+		{4D2F8A61-1B3C-4E7D-9F05-6A8C2E4B7D03}.Debug|ARM64.Build.0 = Debug|Any CPU
+		{4D2F8A61-1B3C-4E7D-9F05-6A8C2E4B7D03}.Release|x64.ActiveCfg = Release|Any CPU
+		{4D2F8A61-1B3C-4E7D-9F05-6A8C2E4B7D03}.Release|x64.Build.0 = Release|Any CPU
+		{4D2F8A61-1B3C-4E7D-9F05-6A8C2E4B7D03}.Release|ARM64.ActiveCfg = Release|Any CPU
+		{4D2F8A61-1B3C-4E7D-9F05-6A8C2E4B7D03}.Release|ARM64.Build.0 = Release|Any CPU
+		{8E5A3C17-6F2B-4D9A-A1E3-7B4C9D2F5E04}.Debug|x64.ActiveCfg = Debug|Any CPU
+		{8E5A3C17-6F2B-4D9A-A1E3-7B4C9D2F5E04}.Debug|x64.Build.0 = Debug|Any CPU
+		{8E5A3C17-6F2B-4D9A-A1E3-7B4C9D2F5E04}.Debug|ARM64.ActiveCfg = Debug|Any CPU
+		{8E5A3C17-6F2B-4D9A-A1E3-7B4C9D2F5E04}.Debug|ARM64.Build.0 = Debug|Any CPU
+		{8E5A3C17-6F2B-4D9A-A1E3-7B4C9D2F5E04}.Release|x64.ActiveCfg = Release|Any CPU
+		{8E5A3C17-6F2B-4D9A-A1E3-7B4C9D2F5E04}.Release|x64.Build.0 = Release|Any CPU
+		{8E5A3C17-6F2B-4D9A-A1E3-7B4C9D2F5E04}.Release|ARM64.ActiveCfg = Release|Any CPU
+		{8E5A3C17-6F2B-4D9A-A1E3-7B4C9D2F5E04}.Release|ARM64.Build.0 = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(NestedProjects) = preSolution
+		{6B1C2A57-2E4D-4C8B-9A61-0E5F1B7D3A01} = {A1B2C3D4-0001-4000-8000-000000000001}
+		{0C7E4B2F-8A3D-4E61-B5C9-3F2A6D8E1B02} = {A1B2C3D4-0001-4000-8000-000000000001}
+		{4D2F8A61-1B3C-4E7D-9F05-6A8C2E4B7D03} = {A1B2C3D4-0001-4000-8000-000000000001}
+		{8E5A3C17-6F2B-4D9A-A1E3-7B4C9D2F5E04} = {A1B2C3D4-0002-4000-8000-000000000002}
+	EndGlobalSection
+	GlobalSection(ExtensibilityGlobals) = postSolution
+		SolutionGuid = {F3C9A2B1-7E4D-4A6B-9C8D-1E2F3A4B5C6D}
+	EndGlobalSection
+EndGlobal

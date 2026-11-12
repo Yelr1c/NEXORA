@@ -1,0 +1,10 @@
+{
+  "profiles": {
+    "NEXORA (Package)": {
+      "commandName": "MsixPackage"
+    },
+    "NEXORA (Unpackaged)": {
+      "commandName": "Project"
+    }
+  }
+}

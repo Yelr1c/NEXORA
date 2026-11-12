@@ -1,0 +1,72 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Package
+  xmlns="http://schemas.microsoft.com/appx/manifest/foundation/windows10"
+  xmlns:uap="http://schemas.microsoft.com/appx/manifest/uap/windows10"
+  xmlns:uap3="http://schemas.microsoft.com/appx/manifest/uap/windows10/3"
+  xmlns:uap5="http://schemas.microsoft.com/appx/manifest/uap/windows10/5"
+  xmlns:desktop="http://schemas.microsoft.com/appx/manifest/desktop/windows10"
+  xmlns:desktop6="http://schemas.microsoft.com/appx/manifest/desktop/windows10/6"
+  xmlns:rescap="http://schemas.microsoft.com/appx/manifest/foundation/windows10/restrictedcapabilities"
+  IgnorableNamespaces="uap uap3 uap5 desktop desktop6 rescap">
+
+  <!-- Publisher must exactly match the Subject of the certificate used to sign the package. -->
+  <Identity Name="Nexora.PerformanceSuite" Publisher="CN=NEXORA" Version="1.0.0.0" />
+
+  <Properties>
+    <DisplayName>NEXORA</DisplayName>
+    <PublisherDisplayName>NEXORA</PublisherDisplayName>
+    <Logo>Assets\StoreLogo.png</Logo>
+    <Description>Optimize. Measure. Dominate. Gaming performance diagnostics and safe, reversible Windows optimization.</Description>
+    <!-- NEXORA changes real per-user Windows settings (HKCU) and cleans the real %TEMP% folder.
+         MSIX would otherwise redirect those writes into a private package copy, making the changes ineffective. -->
+    <desktop6:FileSystemWriteVirtualization>disabled</desktop6:FileSystemWriteVirtualization>
+    <desktop6:RegistryWriteVirtualization>disabled</desktop6:RegistryWriteVirtualization>
+  </Properties>
+
+  <Dependencies>
+    <TargetDeviceFamily Name="Windows.Desktop" MinVersion="10.0.19041.0" MaxVersionTested="10.0.26100.0" />
+  </Dependencies>
+
+  <Resources>
+    <Resource Language="x-generate" />
+  </Resources>
+
+  <Applications>
+    <Application Id="App" Executable="$targetnametoken$.exe" EntryPoint="$targetentrypoint$">
+      <uap:VisualElements
+        DisplayName="NEXORA"
+        Description="Optimize. Measure. Dominate."
+        BackgroundColor="transparent"
+        Square150x150Logo="Assets\Square150x150Logo.png"
+        Square44x44Logo="Assets\Square44x44Logo.png">
+        <uap:DefaultTile Wide310x150Logo="Assets\Wide310x150Logo.png" ShortName="NEXORA">
+          <uap:ShowNameOnTiles>
+            <uap:ShowOn Tile="square150x150Logo" />
+            <uap:ShowOn Tile="wide310x150Logo" />
+          </uap:ShowNameOnTiles>
+        </uap:DefaultTile>
+        <uap:SplashScreen Image="Assets\SplashScreen.png" BackgroundColor="#0A0E14" />
+      </uap:VisualElements>
+      <Extensions>
+        <!-- "Start NEXORA with Windows" (toggled from Settings via the StartupTask API). -->
+        <desktop:Extension Category="windows.startupTask" Executable="NEXORA.exe" EntryPoint="Windows.FullTrustApplication">
+          <desktop:StartupTask TaskId="NexoraStartup" Enabled="false" DisplayName="NEXORA" />
+        </desktop:Extension>
+        <!-- "nexora.exe" alias: used to relaunch elevated on request. -->
+        <uap3:Extension Category="windows.appExecutionAlias" Executable="NEXORA.exe" EntryPoint="Windows.FullTrustApplication">
+          <uap3:AppExecutionAlias>
+            <desktop:ExecutionAlias Alias="nexora.exe" />
+          </uap3:AppExecutionAlias>
+        </uap3:Extension>
+      </Extensions>
+    </Application>
+  </Applications>
+
+  <Capabilities>
+    <rescap:Capability Name="runFullTrust" />
+    <!-- Lets the user explicitly restart NEXORA as administrator for FPS capture and machine-wide settings. -->
+    <rescap:Capability Name="allowElevation" />
+    <!-- Required for the two *WriteVirtualization=disabled declarations above. -->
+    <rescap:Capability Name="unvirtualizedResources" />
+  </Capabilities>
+</Package>

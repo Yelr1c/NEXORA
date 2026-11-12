@@ -1,0 +1,234 @@
+<Page
+    x:Class="Nexora.App.Views.PerformancePage"
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:controls="using:Nexora.App.Controls"
+    xmlns:vm="using:Nexora.App.ViewModels"
+    Background="Transparent">
+
+    <ScrollViewer VerticalScrollBarVisibility="Auto">
+        <StackPanel Padding="32,20,32,32" Spacing="20" MaxWidth="1440">
+            <StackPanel Spacing="2">
+                <TextBlock Style="{StaticResource PageTitleStyle}" Text="Performance" />
+                <TextBlock Style="{StaticResource PageSubtitleStyle}" Text="Live FPS, frame times and hardware utilization. FPS is measured from DirectX present events — nothing is injected into your games." />
+            </StackPanel>
+
+            <InfoBar
+                IsOpen="{x:Bind ViewModel.CaptureNeedsElevation, Mode=OneWay}"
+                IsClosable="False"
+                Severity="Informational"
+                Title="FPS capture needs administrator rights"
+                Message="Windows only allows administrators to read graphics present events. Hardware metrics keep working without elevation.">
+                <InfoBar.ActionButton>
+                    <Button Content="Restart as administrator" Command="{x:Bind ViewModel.RestartElevatedCommand}" />
+                </InfoBar.ActionButton>
+            </InfoBar>
+
+            <!-- Live FPS -->
+            <Border Style="{StaticResource HeroCardStyle}">
+                <Grid ColumnSpacing="32">
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="260" />
+                        <ColumnDefinition Width="*" />
+                    </Grid.ColumnDefinitions>
+                    <StackPanel Spacing="8" VerticalAlignment="Center">
+                        <TextBlock Style="{StaticResource CardLabelStyle}" Text="CURRENT FPS" />
+                        <StackPanel Orientation="Horizontal" Spacing="6">
+                            <TextBlock Text="{x:Bind ViewModel.FpsText, Mode=OneWay}" FontSize="64" FontWeight="SemiBold" TextLineBounds="Tight" />
+                            <TextBlock Text="FPS" FontSize="16" Opacity="0.6" VerticalAlignment="Bottom" />
+                        </StackPanel>
+                        <TextBlock FontSize="14">
+                            <Run Text="Frame time " Foreground="{ThemeResource NexoraSubtleTextBrush}" />
+                            <Run Text="{x:Bind ViewModel.FrameTimeText, Mode=OneWay}" FontWeight="SemiBold" />
+                        </TextBlock>
+                        <TextBlock Text="{x:Bind ViewModel.FpsProcess, Mode=OneWay}" Style="{StaticResource BodySubtleStyle}" />
+                        <ComboBox
+                            Margin="0,8,0,0"
+                            MinWidth="240"
+                            Header="Monitored application"
+                            ItemsSource="{x:Bind ViewModel.Targets}"
+                            SelectedItem="{x:Bind ViewModel.SelectedTarget, Mode=TwoWay}"
+                            DropDownOpened="OnTargetsOpened" />
+                        <StackPanel Orientation="Horizontal" Spacing="8">
+                            <Ellipse Width="7" Height="7" VerticalAlignment="Center" Fill="{StaticResource NexoraFpsBrush}" Visibility="{x:Bind ViewModel.CaptureRunning, Mode=OneWay}" />
+                            <TextBlock Text="{x:Bind ViewModel.CaptureStatus, Mode=OneWay}" FontSize="12" Foreground="{ThemeResource NexoraSubtleTextBrush}" TextWrapping="WrapWholeWords" />
+                        </StackPanel>
+                        <Button Content="Start FPS capture" Style="{StaticResource SecondaryButtonStyle}" Visibility="{x:Bind ViewModel.CaptureCanStart, Mode=OneWay}" Command="{x:Bind ViewModel.StartCaptureCommand}" />
+                    </StackPanel>
+                    <Grid Grid.Column="1" RowSpacing="8">
+                        <Grid.RowDefinitions>
+                            <RowDefinition Height="Auto" />
+                            <RowDefinition Height="*" />
+                            <RowDefinition Height="Auto" />
+                            <RowDefinition Height="90" />
+                        </Grid.RowDefinitions>
+                        <TextBlock Style="{StaticResource CardLabelStyle}" Text="FPS — LAST 2 MINUTES" />
+                        <controls:LineChart Grid.Row="1" MinHeight="140" Capacity="120" Unit="FPS" Stroke="{StaticResource NexoraFpsBrush}" Values="{x:Bind ViewModel.FpsHistory, Mode=OneWay}" />
+                        <TextBlock Grid.Row="2" Style="{StaticResource CardLabelStyle}" Text="FRAME TIME (MS)" />
+                        <controls:LineChart Grid.Row="3" Capacity="120" Unit="ms" Stroke="{StaticResource NexoraWarningBrush}" Values="{x:Bind ViewModel.FrameTimeHistory, Mode=OneWay}" />
+                    </Grid>
+                </Grid>
+            </Border>
+
+            <!-- Hardware -->
+            <Border Style="{StaticResource CardStyle}">
+                <StackPanel Spacing="14">
+                    <TextBlock Style="{StaticResource SectionTitleStyle}" Text="Hardware" />
+                    <Grid ColumnSpacing="12" RowSpacing="12">
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="*" />
+                            <ColumnDefinition Width="*" />
+                            <ColumnDefinition Width="*" />
+                            <ColumnDefinition Width="*" />
+                            <ColumnDefinition Width="*" />
+                        </Grid.ColumnDefinitions>
+                        <Grid.RowDefinitions>
+                            <RowDefinition Height="Auto" />
+                            <RowDefinition Height="Auto" />
+                        </Grid.RowDefinitions>
+                        <controls:StatTile Label="CPU usage" Value="{x:Bind ViewModel.CpuText, Mode=OneWay}" />
+                        <controls:StatTile Grid.Column="1" Label="CPU frequency" Value="{x:Bind ViewModel.CpuFreqText, Mode=OneWay}" />
+                        <controls:StatTile Grid.Column="2" Label="CPU temperature" Value="{x:Bind ViewModel.CpuTempText, Mode=OneWay}" />
+                        <controls:StatTile Grid.Column="3" Label="System memory" Value="{x:Bind ViewModel.RamText, Mode=OneWay}" />
+                        <controls:StatTile Grid.Column="4" Label="Processes" Value="{x:Bind ViewModel.ProcessCountText, Mode=OneWay}" />
+                        <controls:StatTile Grid.Row="1" Label="GPU usage" Value="{x:Bind ViewModel.GpuText, Mode=OneWay}" />
+                        <controls:StatTile Grid.Row="1" Grid.Column="1" Label="GPU frequency" Value="{x:Bind ViewModel.GpuFreqText, Mode=OneWay}" />
+                        <controls:StatTile Grid.Row="1" Grid.Column="2" Label="GPU temperature" Value="{x:Bind ViewModel.GpuTempText, Mode=OneWay}" />
+                        <controls:StatTile Grid.Row="1" Grid.Column="3" Label="Video memory" Value="{x:Bind ViewModel.VramText, Mode=OneWay}" />
+                    </Grid>
+                    <Grid ColumnSpacing="16">
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="*" />
+                            <ColumnDefinition Width="*" />
+                            <ColumnDefinition Width="*" />
+                        </Grid.ColumnDefinitions>
+                        <StackPanel Spacing="6">
+                            <TextBlock Style="{StaticResource CardLabelStyle}" Text="CPU %" />
+                            <controls:LineChart Height="90" Capacity="120" Maximum="100" Values="{x:Bind ViewModel.CpuHistory, Mode=OneWay}" />
+                        </StackPanel>
+                        <StackPanel Grid.Column="1" Spacing="6">
+                            <TextBlock Style="{StaticResource CardLabelStyle}" Text="GPU %" />
+                            <controls:LineChart Height="90" Capacity="120" Maximum="100" Stroke="{StaticResource NexoraGpuBrush}" Values="{x:Bind ViewModel.GpuHistory, Mode=OneWay}" />
+                        </StackPanel>
+                        <StackPanel Grid.Column="2" Spacing="6">
+                            <TextBlock Style="{StaticResource CardLabelStyle}" Text="RAM %" />
+                            <controls:LineChart Height="90" Capacity="120" Maximum="100" Stroke="{StaticResource NexoraRamBrush}" Values="{x:Bind ViewModel.RamHistory, Mode=OneWay}" />
+                        </StackPanel>
+                    </Grid>
+                </StackPanel>
+            </Border>
+
+            <Grid ColumnSpacing="16">
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="3*" />
+                    <ColumnDefinition Width="2*" />
+                </Grid.ColumnDefinitions>
+
+                <!-- Performance test -->
+                <Border Style="{StaticResource CardStyle}">
+                    <StackPanel Spacing="16">
+                        <StackPanel Spacing="4">
+                            <TextBlock Style="{StaticResource SectionTitleStyle}" Text="Performance test" />
+                            <TextBlock Style="{StaticResource BodySubtleStyle}" Text="Start the test, switch to your game and play normally. NEXORA records every frame and the hardware load for the selected duration." />
+                        </StackPanel>
+                        <StackPanel Orientation="Horizontal" Spacing="12">
+                            <ComboBox MinWidth="160" ItemsSource="{x:Bind ViewModel.Durations}" SelectedItem="{x:Bind ViewModel.SelectedDuration, Mode=TwoWay}" IsEnabled="{x:Bind ViewModel.IsSessionIdle, Mode=OneWay}" />
+                            <Button Style="{StaticResource HeroButtonStyle}" Content="START PERFORMANCE TEST" Command="{x:Bind ViewModel.StartSessionCommand}" Visibility="{x:Bind ViewModel.IsSessionIdle, Mode=OneWay}" />
+                            <Button Style="{StaticResource SecondaryButtonStyle}" Content="Stop test" Command="{x:Bind ViewModel.StopSessionCommand}" Visibility="{x:Bind ViewModel.IsSessionRunning, Mode=OneWay}" />
+                        </StackPanel>
+                        <StackPanel Spacing="6" Visibility="{x:Bind ViewModel.IsSessionRunning, Mode=OneWay}">
+                            <ProgressBar Style="{StaticResource ProgressStyle}" Value="{x:Bind ViewModel.SessionProgress, Mode=OneWay}" />
+                            <TextBlock Text="{x:Bind ViewModel.SessionRemaining, Mode=OneWay}" Style="{StaticResource BodySubtleStyle}" />
+                        </StackPanel>
+
+                        <StackPanel Spacing="14" Visibility="{x:Bind ViewModel.HasResult, Mode=OneWay}">
+                            <Border Height="1" Background="{ThemeResource NexoraDividerBrush}" />
+                            <TextBlock Style="{StaticResource CardLabelStyle}" Text="{x:Bind ViewModel.ResultTitle, Mode=OneWay}" />
+                            <Grid ColumnSpacing="12">
+                                <Grid.ColumnDefinitions>
+                                    <ColumnDefinition Width="*" />
+                                    <ColumnDefinition Width="*" />
+                                    <ColumnDefinition Width="*" />
+                                    <ColumnDefinition Width="*" />
+                                </Grid.ColumnDefinitions>
+                                <controls:StatTile Large="True" Label="Average FPS" Value="{x:Bind ViewModel.AvgFps, Mode=OneWay}" />
+                                <controls:StatTile Grid.Column="1" Large="True" Label="1% low" Value="{x:Bind ViewModel.OnePercentLow, Mode=OneWay}" />
+                                <controls:StatTile Grid.Column="2" Large="True" Label="0.1% low" Value="{x:Bind ViewModel.PointOnePercentLow, Mode=OneWay}" />
+                                <controls:StatTile Grid.Column="3" Large="True" Label="Avg frame time" Value="{x:Bind ViewModel.AvgFrameTime, Mode=OneWay}" />
+                            </Grid>
+                            <TextBlock Text="{x:Bind ViewModel.ResultFrameNote, Mode=OneWay}" Style="{StaticResource BodySubtleStyle}" />
+                            <Grid ColumnSpacing="12">
+                                <Grid.ColumnDefinitions>
+                                    <ColumnDefinition Width="*" />
+                                    <ColumnDefinition Width="*" />
+                                    <ColumnDefinition Width="*" />
+                                </Grid.ColumnDefinitions>
+                                <controls:StatTile Label="CPU usage" Value="{x:Bind ViewModel.ResultCpu, Mode=OneWay}" />
+                                <controls:StatTile Grid.Column="1" Label="GPU usage" Value="{x:Bind ViewModel.ResultGpu, Mode=OneWay}" />
+                                <controls:StatTile Grid.Column="2" Label="RAM usage" Value="{x:Bind ViewModel.ResultRam, Mode=OneWay}" />
+                            </Grid>
+                            <ItemsRepeater ItemsSource="{x:Bind ViewModel.ResultInsights}">
+                                <ItemsRepeater.Layout>
+                                    <StackLayout Spacing="8" />
+                                </ItemsRepeater.Layout>
+                                <ItemsRepeater.ItemTemplate>
+                                    <DataTemplate x:DataType="x:String">
+                                        <Grid ColumnSpacing="10">
+                                            <Grid.ColumnDefinitions>
+                                                <ColumnDefinition Width="Auto" />
+                                                <ColumnDefinition Width="*" />
+                                            </Grid.ColumnDefinitions>
+                                            <FontIcon Glyph="&#xE82F;" FontSize="14" Foreground="{StaticResource NexoraAccentBrush}" VerticalAlignment="Top" Margin="0,2,0,0" />
+                                            <TextBlock Grid.Column="1" Text="{x:Bind}" Style="{StaticResource BodyStyle}" />
+                                        </Grid>
+                                    </DataTemplate>
+                                </ItemsRepeater.ItemTemplate>
+                            </ItemsRepeater>
+                        </StackPanel>
+                    </StackPanel>
+                </Border>
+
+                <!-- Background usage -->
+                <Border Grid.Column="1" Style="{StaticResource CardStyle}">
+                    <StackPanel Spacing="12">
+                        <TextBlock Style="{StaticResource SectionTitleStyle}" Text="Top resource usage" />
+                        <TextBlock Style="{StaticResource BodySubtleStyle}" Text="Processes using the most CPU right now. Manage them on the Processes page." />
+                        <Grid ColumnSpacing="8" Opacity="0.7">
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="*" />
+                                <ColumnDefinition Width="60" />
+                                <ColumnDefinition Width="80" />
+                                <ColumnDefinition Width="50" />
+                            </Grid.ColumnDefinitions>
+                            <TextBlock Text="PROCESS" Style="{StaticResource CardLabelStyle}" />
+                            <TextBlock Grid.Column="1" Text="CPU" Style="{StaticResource CardLabelStyle}" />
+                            <TextBlock Grid.Column="2" Text="MEMORY" Style="{StaticResource CardLabelStyle}" />
+                            <TextBlock Grid.Column="3" Text="GPU" Style="{StaticResource CardLabelStyle}" />
+                        </Grid>
+                        <ItemsRepeater ItemsSource="{x:Bind ViewModel.TopProcesses}">
+                            <ItemsRepeater.Layout>
+                                <StackLayout Spacing="6" />
+                            </ItemsRepeater.Layout>
+                            <ItemsRepeater.ItemTemplate>
+                                <DataTemplate x:DataType="vm:ProcessUsageViewModel">
+                                    <Grid ColumnSpacing="8">
+                                        <Grid.ColumnDefinitions>
+                                            <ColumnDefinition Width="*" />
+                                            <ColumnDefinition Width="60" />
+                                            <ColumnDefinition Width="80" />
+                                            <ColumnDefinition Width="50" />
+                                        </Grid.ColumnDefinitions>
+                                        <TextBlock Text="{x:Bind Name}" FontSize="13" TextTrimming="CharacterEllipsis" />
+                                        <TextBlock Grid.Column="1" Text="{x:Bind CpuText}" FontSize="13" />
+                                        <TextBlock Grid.Column="2" Text="{x:Bind MemoryText}" FontSize="13" />
+                                        <TextBlock Grid.Column="3" Text="{x:Bind GpuText}" FontSize="13" />
+                                    </Grid>
+                                </DataTemplate>
+                            </ItemsRepeater.ItemTemplate>
+                        </ItemsRepeater>
+                    </StackPanel>
+                </Border>
+            </Grid>
+        </StackPanel>
+    </ScrollViewer>
+</Page>

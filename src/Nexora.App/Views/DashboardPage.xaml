@@ -1,0 +1,156 @@
+<Page
+    x:Class="Nexora.App.Views.DashboardPage"
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:controls="using:Nexora.App.Controls"
+    xmlns:helpers="using:Nexora.App.Helpers"
+    xmlns:vm="using:Nexora.App.ViewModels"
+    Background="Transparent">
+
+    <ScrollViewer VerticalScrollBarVisibility="Auto">
+        <StackPanel Padding="32,20,32,32" Spacing="20" MaxWidth="1440">
+            <Grid>
+                <StackPanel Spacing="2">
+                    <TextBlock Style="{StaticResource PageTitleStyle}" Text="Dashboard" />
+                    <TextBlock Style="{StaticResource PageSubtitleStyle}" Text="Live overview of your system, measured in real time." />
+                </StackPanel>
+                <Button HorizontalAlignment="Right" VerticalAlignment="Center" Style="{StaticResource HeroButtonStyle}" Content="SCAN MY PC" Command="{x:Bind ViewModel.ScanCommand}" />
+            </Grid>
+
+            <!-- Hero: performance score -->
+            <Border Style="{StaticResource HeroCardStyle}">
+                <Grid ColumnSpacing="36">
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="Auto" />
+                        <ColumnDefinition Width="*" />
+                    </Grid.ColumnDefinitions>
+                    <controls:ScoreRing Width="230" Height="230" Thickness="14" Value="{x:Bind ViewModel.ScoreValue, Mode=OneWay}" Label="{x:Bind ViewModel.ScoreRating, Mode=OneWay}" />
+                    <StackPanel Grid.Column="1" VerticalAlignment="Center" Spacing="14">
+                        <TextBlock Style="{StaticResource CardLabelStyle}" Text="SYSTEM PERFORMANCE" />
+                        <TextBlock FontSize="22" FontWeight="SemiBold" Text="{x:Bind ViewModel.ScoreSummary, Mode=OneWay}" TextWrapping="WrapWholeWords" />
+                        <TextBlock Style="{StaticResource BodySubtleStyle}" Text="The score combines measured CPU, GPU and memory headroom, storage, network quality, temperatures, startup load and gaming settings. It describes system health — it is not an FPS prediction." />
+                        <ItemsRepeater ItemsSource="{x:Bind ViewModel.ScoreComponents}">
+                            <ItemsRepeater.Layout>
+                                <UniformGridLayout MinItemWidth="200" MinItemHeight="44" MinColumnSpacing="10" MinRowSpacing="10" ItemsStretch="Fill" />
+                            </ItemsRepeater.Layout>
+                            <ItemsRepeater.ItemTemplate>
+                                <DataTemplate x:DataType="vm:ScoreComponentViewModel">
+                                    <Border Style="{StaticResource InsetStyle}">
+                                        <Grid ColumnSpacing="8">
+                                            <Grid.ColumnDefinitions>
+                                                <ColumnDefinition Width="*" />
+                                                <ColumnDefinition Width="Auto" />
+                                            </Grid.ColumnDefinitions>
+                                            <StackPanel>
+                                                <TextBlock Text="{x:Bind Name}" FontSize="12" FontWeight="SemiBold" />
+                                                <TextBlock Text="{x:Bind Detail}" FontSize="11" Foreground="{ThemeResource NexoraSubtleTextBrush}" TextTrimming="CharacterEllipsis" />
+                                            </StackPanel>
+                                            <TextBlock Grid.Column="1" Text="{x:Bind ScoreText}" FontSize="16" FontWeight="SemiBold" VerticalAlignment="Center" />
+                                        </Grid>
+                                    </Border>
+                                </DataTemplate>
+                            </ItemsRepeater.ItemTemplate>
+                        </ItemsRepeater>
+                    </StackPanel>
+                </Grid>
+            </Border>
+
+            <!-- Metric cards -->
+            <Grid ColumnSpacing="16" RowSpacing="16">
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="*" />
+                    <ColumnDefinition Width="*" />
+                    <ColumnDefinition Width="*" />
+                </Grid.ColumnDefinitions>
+                <Grid.RowDefinitions>
+                    <RowDefinition Height="Auto" />
+                    <RowDefinition Height="Auto" />
+                </Grid.RowDefinitions>
+
+                <controls:MetricCard
+                    Title="FPS Performance"
+                    Glyph="&#xE7FC;"
+                    Accent="{StaticResource NexoraFpsBrush}"
+                    ValueText="{x:Bind ViewModel.FpsText, Mode=OneWay}"
+                    Unit="FPS"
+                    Detail="{x:Bind ViewModel.FpsDetail, Mode=OneWay}"
+                    Tapped="OnFpsTapped" />
+                <controls:MetricCard
+                    Grid.Column="1"
+                    Title="Network Latency"
+                    Glyph="&#xE968;"
+                    ValueText="{x:Bind ViewModel.PingText, Mode=OneWay}"
+                    Unit="ms"
+                    Detail="{x:Bind ViewModel.NetworkDetail, Mode=OneWay}"
+                    Series="{x:Bind ViewModel.PingHistory, Mode=OneWay}"
+                    Tapped="OnNetworkTapped" />
+                <controls:MetricCard
+                    Grid.Column="2"
+                    Title="System Health"
+                    Glyph="&#xE95E;"
+                    Accent="{StaticResource NexoraSecondaryAccentBrush}"
+                    ValueText="{x:Bind ViewModel.HealthText, Mode=OneWay}"
+                    Detail="{x:Bind ViewModel.HealthDetail, Mode=OneWay}"
+                    Tapped="OnHealthTapped" />
+
+                <controls:MetricCard
+                    Grid.Row="1"
+                    Title="CPU Usage"
+                    Glyph="&#xE950;"
+                    UseNumeric="True"
+                    NumericValue="{x:Bind ViewModel.Cpu, Mode=OneWay}"
+                    Suffix="%"
+                    Detail="{x:Bind ViewModel.CpuDetail, Mode=OneWay}"
+                    Series="{x:Bind ViewModel.CpuHistory, Mode=OneWay}"
+                    SeriesMaximum="100" />
+                <controls:MetricCard
+                    Grid.Row="1"
+                    Grid.Column="1"
+                    Title="GPU Usage"
+                    Glyph="&#xE7F4;"
+                    Accent="{StaticResource NexoraGpuBrush}"
+                    UseNumeric="True"
+                    IsAvailable="{x:Bind ViewModel.GpuAvailable, Mode=OneWay}"
+                    NumericValue="{x:Bind ViewModel.Gpu, Mode=OneWay}"
+                    Suffix="%"
+                    Detail="{x:Bind ViewModel.GpuDetail, Mode=OneWay}"
+                    Series="{x:Bind ViewModel.GpuHistory, Mode=OneWay}"
+                    SeriesMaximum="100" />
+                <controls:MetricCard
+                    Grid.Row="1"
+                    Grid.Column="2"
+                    Title="RAM Usage"
+                    Glyph="&#xEEA0;"
+                    Accent="{StaticResource NexoraRamBrush}"
+                    UseNumeric="True"
+                    NumericValue="{x:Bind ViewModel.Ram, Mode=OneWay}"
+                    Suffix="%"
+                    Detail="{x:Bind ViewModel.RamDetail, Mode=OneWay}"
+                    Series="{x:Bind ViewModel.RamHistory, Mode=OneWay}"
+                    SeriesMaximum="100" />
+            </Grid>
+
+            <Border Style="{StaticResource CardStyle}" Padding="20,14">
+                <Grid ColumnSpacing="24">
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="Auto" />
+                        <ColumnDefinition Width="Auto" />
+                        <ColumnDefinition Width="*" />
+                    </Grid.ColumnDefinitions>
+                    <StackPanel Orientation="Horizontal" Spacing="8">
+                        <FontIcon Glyph="&#xE9CA;" Style="{StaticResource IconStyle}" Foreground="{ThemeResource NexoraSubtleTextBrush}" />
+                        <TextBlock VerticalAlignment="Center" FontSize="13">
+                            <Run Text="CPU temperature " Foreground="{ThemeResource NexoraSubtleTextBrush}" />
+                            <Run Text="{x:Bind ViewModel.CpuTempText, Mode=OneWay}" FontWeight="SemiBold" />
+                        </TextBlock>
+                    </StackPanel>
+                    <TextBlock Grid.Column="1" VerticalAlignment="Center" FontSize="13">
+                        <Run Text="GPU temperature " Foreground="{ThemeResource NexoraSubtleTextBrush}" />
+                        <Run Text="{x:Bind ViewModel.GpuTempText, Mode=OneWay}" FontWeight="SemiBold" />
+                    </TextBlock>
+                    <HyperlinkButton Grid.Column="2" HorizontalAlignment="Right" Content="Open optimizer" Command="{x:Bind ViewModel.OpenOptimizerCommand}" />
+                </Grid>
+            </Border>
+        </StackPanel>
+    </ScrollViewer>
+</Page>
