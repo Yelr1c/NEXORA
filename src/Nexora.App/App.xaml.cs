@@ -89,6 +89,19 @@ public partial class App : Application
 
     protected override void OnLaunched(LaunchActivatedEventArgs args)
     {
+        try
+        {
+            OnLaunchedCore();
+        }
+        catch (Exception ex)
+        {
+            _logger.LogCritical(ex, "Startup failed");
+            StartupGuard.Fatal("window creation", ex);
+        }
+    }
+
+    private void OnLaunchedCore()
+    {
         var settings = GetService<ISettingsService>();
         var dispatcher = GetService<UiDispatcher>();
         _window = GetService<MainWindow>();
@@ -110,6 +123,7 @@ public partial class App : Application
         if (launchedAtStartup && settings.Current.StartMinimized && settings.Current.FirstRunCompleted)
         {
             GetService<MetricsMonitor>().SetForeground(false);
+            _window.HasBeenShown = true;
         }
         else
         {
@@ -309,6 +323,12 @@ public partial class App : Application
     private void OnUnhandledException(object sender, Microsoft.UI.Xaml.UnhandledExceptionEventArgs e)
     {
         _logger.LogError(e.Exception, "Unhandled UI exception");
+        if (_window is null || !_window.HasBeenShown)
+        {
+            // Never keep running without a visible window.
+            StartupGuard.Fatal("startup", e.Exception);
+        }
+
         e.Handled = true;
         _window?.ShowError("Unexpected error", e.Message);
     }

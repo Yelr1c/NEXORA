@@ -17,18 +17,33 @@ public static class Program
     [STAThread]
     private static int Main(string[] args)
     {
-        WinRT.ComWrappersSupport.InitializeComWrappers();
-        if (TryRedirectToExistingInstance(args))
+        try
         {
-            return 0;
+            WinRT.ComWrappersSupport.InitializeComWrappers();
+            if (TryRedirectToExistingInstance(args))
+            {
+                return 0;
+            }
+
+            Application.Start(callbackParams =>
+            {
+                try
+                {
+                    var context = new DispatcherQueueSynchronizationContext(DispatcherQueue.GetForCurrentThread());
+                    SynchronizationContext.SetSynchronizationContext(context);
+                    _ = new App(args);
+                }
+                catch (Exception ex)
+                {
+                    StartupGuard.Fatal("application initialization", ex);
+                }
+            });
+        }
+        catch (Exception ex)
+        {
+            StartupGuard.Fatal("process startup", ex);
         }
 
-        Application.Start(callbackParams =>
-        {
-            var context = new DispatcherQueueSynchronizationContext(DispatcherQueue.GetForCurrentThread());
-            SynchronizationContext.SetSynchronizationContext(context);
-            _ = new App(args);
-        });
         return 0;
     }
 

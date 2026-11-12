@@ -1,0 +1,52 @@
+name: Smoke test
+
+# Publishes the portable build, launches NEXORA.exe on a real Windows machine and reports whether
+# the window appears, with a screenshot, NEXORA logs and Windows crash events.
+on:
+  workflow_dispatch:
+
+jobs:
+  smoke:
+    runs-on: windows-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-dotnet@v4
+        with:
+          global-json-file: global.json
+      - name: Publish portable build
+        shell: pwsh
+        run: ./build/publish-unpackaged.ps1 -Platform x64 -NoZip
+      - name: Launch NEXORA and inspect
+        shell: pwsh
+        run: |
+          $exe = Resolve-Path artifacts/portable/win-x64/NEXORA.exe
+          $p = Start-Process -FilePath $exe -PassThru
+          Start-Sleep -Seconds 30
+          $p.Refresh()
+          "HasExited: $($p.HasExited)"
+          if ($p.HasExited) { "ExitCode: $($p.ExitCode)" } else {
+            "MainWindowTitle: '$($p.MainWindowTitle)'  Handle: $($p.MainWindowHandle)"
+            "WorkingSet MB: $([math]::Round($p.WorkingSet64/1MB))"
+          }
+          Get-Process NEXORA -ErrorAction SilentlyContinue | Format-Table Id, MainWindowTitle, Responding -AutoSize | Out-String
+          Add-Type -AssemblyName System.Windows.Forms, System.Drawing
+          $b = [System.Windows.Forms.Screen]::PrimaryScreen.Bounds
+          $bmp = New-Object System.Drawing.Bitmap $b.Width, $b.Height
+          [System.Drawing.Graphics]::FromImage($bmp).CopyFromScreen($b.Location, [System.Drawing.Point]::Empty, $b.Size)
+          New-Item -ItemType Directory -Force smoke | Out-Null
+          $bmp.Save("smoke/screen.png")
+          $data = Join-Path $env:LOCALAPPDATA 'NEXORA'
+          "---- startup-error.txt ----"
+          Get-Content (Join-Path $data 'startup-error.txt') -ErrorAction SilentlyContinue
+          "---- NEXORA logs ----"
+          Get-ChildItem (Join-Path $data 'Logs') -Filter *.log -ErrorAction SilentlyContinue | ForEach-Object { Get-Content $_.FullName -Tail 80 }
+          "---- Windows Application errors ----"
+          Get-WinEvent -FilterHashtable @{LogName='Application'; Level=2; StartTime=(Get-Date).AddMinutes(-5)} -ErrorAction SilentlyContinue |
+            Select-Object -First 10 | ForEach-Object { "[$($_.ProviderName)] $($_.Message)" }
+          Copy-Item (Join-Path $data '*') smoke -Recurse -ErrorAction SilentlyContinue
+          Stop-Process -Name NEXORA -Force -ErrorAction SilentlyContinue
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: smoke
+          path: smoke

@@ -43,6 +43,9 @@ public sealed partial class MainWindow : Window
 
     public bool TrayAvailable { get; set; }
 
+    /// <summary>True once the window has been shown at least once (or started hidden in the tray on purpose).</summary>
+    public bool HasBeenShown { get; set; }
+
     public Action<string, string>? TrayBalloon { get; set; }
 
     public void Initialize()
@@ -109,6 +112,7 @@ public sealed partial class MainWindow : Window
         }
 
         Activate();
+        HasBeenShown = true;
         _ = SetForegroundWindow(WinRT.Interop.WindowNative.GetWindowHandle(this));
         _monitor.SetForeground(true);
         Shell.AppStatus = "Monitoring";
