@@ -53,7 +53,21 @@ public sealed class ShellViewModel : ObservableObject
 
     public string SystemStatusDetail { get => _systemStatusDetail; private set => SetProperty(ref _systemStatusDetail, value); }
 
-    public StatusLevel SystemLevel { get => _systemLevel; private set => SetProperty(ref _systemLevel, value); }
+    public StatusLevel SystemLevel
+    {
+        get => _systemLevel;
+        private set
+        {
+            if (SetProperty(ref _systemLevel, value))
+            {
+                OnPropertyChanged(nameof(SystemLevelBrush));
+            }
+        }
+    }
+
+    /// <summary>Brush for the status dot (Window x:Bind cannot use resource converters).</summary>
+    public Microsoft.UI.Xaml.Media.Brush SystemLevelBrush =>
+        (Microsoft.UI.Xaml.Media.Brush)new Helpers.StatusLevelToBrushConverter().Convert(SystemLevel, typeof(Microsoft.UI.Xaml.Media.Brush), null!, string.Empty);
 
     public string AppStatus { get => _appStatus; set => SetProperty(ref _appStatus, value); }
 
