@@ -6,12 +6,19 @@ NEXORA is a native Windows 11 performance optimization and gaming diagnostics ap
 C#, .NET 10, WinUI 3 and the Windows App SDK. It measures real FPS, frame times, hardware load and network
 quality, and applies only safe, documented, fully reversible Windows optimizations.
 
+![NEXORA dashboard](docs/screenshots/dashboard.jpg)
+
+| Network analytics | Optimizer |
+| --- | --- |
+| ![Network](docs/screenshots/network.jpg) | ![Optimizer](docs/screenshots/optimizer.jpg) |
+
 ---
 
 ## Features
 
 | Area | What NEXORA does |
 | --- | --- |
+| **Design** | Responsive 12-column bento grid (`Controls/BentoGrid.cs`) with large, medium and compact cards, colour identities per section (blue, cyan, purple, teal, indigo, orange for warnings), glowing charts, hover lift, press feedback and click-to-navigate cards, cinematic startup animation. |
 | **Dashboard** | Live CPU / GPU / RAM / latency cards with sparklines, live FPS, temperatures and the *NEXORA Performance Score* (0–100), computed only from measured data. |
 | **Performance** | Live FPS + frame-time graphs (ETW present events, no injection), CPU/GPU usage, CPU/GPU frequency, VRAM, temperatures, top resource consumers, and timed performance tests with **Average FPS, 1 % low, 0.1 % low, average frame time, CPU/GPU/RAM** and plain-language insights. |
 | **Network** | DNS benchmark (your DNS vs Cloudflare, Google, Quad9, OpenDNS), ping, jitter, packet loss, gateway (router) latency, internet latency, DNS resolver latency (direct UDP query, bypasses cache), stability score, connection quality, latency graph, adapter details (Wi-Fi vs Ethernet, link speed, signal, gateway, DNS) and an honest diagnosis of where problems originate. |
