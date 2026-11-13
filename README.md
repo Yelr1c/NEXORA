@@ -14,8 +14,13 @@ quality, and applies only safe, documented, fully reversible Windows optimizatio
 | --- | --- |
 | **Dashboard** | Live CPU / GPU / RAM / latency cards with sparklines, live FPS, temperatures and the *NEXORA Performance Score* (0–100), computed only from measured data. |
 | **Performance** | Live FPS + frame-time graphs (ETW present events, no injection), CPU/GPU usage, CPU/GPU frequency, VRAM, temperatures, top resource consumers, and timed performance tests with **Average FPS, 1 % low, 0.1 % low, average frame time, CPU/GPU/RAM** and plain-language insights. |
-| **Network** | Ping, jitter, packet loss, gateway (router) latency, internet latency, DNS resolver latency (direct UDP query, bypasses cache), stability score, connection quality, latency graph, adapter details (Wi-Fi vs Ethernet, link speed, signal, gateway, DNS) and an honest diagnosis of where problems originate. |
-| **Optimizer** | 11 curated optimizations in 6 categories plus per-app startup control. Each item shows *what it changes*, *why it may help*, *expected benefit*, *risk*, *current status*, **Apply** and **Undo**. Includes **SCAN MY PC**, Quick Optimize, Optimization History and *Restore previous configuration*. |
+| **Network** | DNS benchmark (your DNS vs Cloudflare, Google, Quad9, OpenDNS), ping, jitter, packet loss, gateway (router) latency, internet latency, DNS resolver latency (direct UDP query, bypasses cache), stability score, connection quality, latency graph, adapter details (Wi-Fi vs Ethernet, link speed, signal, gateway, DNS) and an honest diagnosis of where problems originate. |
+| **Game Boost** | One click switches on the session gaming tweaks and remembers exactly what it changed; turning it off restores everything. Can start automatically when a game is detected. |
+| **Smart game detection** | Recognizes games from your profiles when they start: FPS capture follows the game, profile priority is applied, optional auto-Boost; all undone when the game closes. |
+| **In-game overlay** | Always-on-top FPS, frame time, CPU, GPU, RAM and ping for borderless/windowed games. Toggle with **Ctrl+Shift+F10** or the tray. |
+| **Performance report** | Before/after comparison of two measured tests: average FPS, 1 % lows, frametime stability, network latency, resource usage. Differences within run-to-run variation are reported as "No real change". |
+| **Bottleneck detection** | Live and per-test explanation of whether the GPU, CPU, RAM, VRAM, heat or a frame cap limits performance. |
+| **Optimizer** | 17 curated optimizations in 6 categories plus per-app startup control. The advisor recommends only what makes sense for the detected PC (GPU type, battery, free space, Wi-Fi) and explains why. Each item shows *what it changes*, *why it may help*, *expected benefit*, *risk*, *current status*, **Apply** and **Undo**. Includes **SCAN MY PC**, Quick Optimize, Optimization History and *Restore previous configuration*. |
 | **Games** | Detects Steam, Epic Games, GOG, Riot (VALORANT, League) and Minecraft Launcher installs; custom games via file picker. Per-game profile: launch arguments, optimization profile, priority, monitoring, auto-revert on exit. |
 | **Processes** | Live process list (CPU, memory, GPU, priority, status) with search/sort, safe **End process** (with confirmation) and priority changes. Critical Windows processes, services and security software are protected. |
 | **Settings** | Theme (dark/light/system), accent color, animations, hardware acceleration (Mica), start with Windows, start minimized, minimize/close to tray, notifications, monitoring interval, background monitoring, FPS capture, network monitoring, optimization preferences. |
@@ -29,10 +34,16 @@ quality, and applies only safe, documented, fully reversible Windows optimizatio
 | Gaming | Optimizations for windowed games (Win 11 22H2+) | Low | – |
 | Gaming | Disable background game recording ("Record what happened") | Low | – |
 | Gaming | Hardware-accelerated GPU scheduling (only if the driver supports it) | Medium | ✔ (restart) |
-| Gaming | Disable *Enhance pointer precision* | Low | – |
+| Gaming | Disable *Enhance pointer precision* (optional, never auto-selected) | Low | – |
+| Gaming | Variable refresh rate for games | Low | – |
+| Gaming | Disable Sticky Keys / Filter Keys / Toggle Keys pop-ups | Low | – |
+| Gaming | Controller Xbox button doesn't open Game Bar | Low | – |
 | Power | High performance plan, or Windows 11 *Best performance* power mode | Low | – |
 | Windows | Turn off transparency effects | Low | – |
 | Windows | Reduce Windows animation effects | Low | – |
+| Windows | Remove startup app delay | Low | – |
+| Windows | Turn off Windows tips and suggestions | Low | – |
+| Windows | Faster menus | Low | – |
 | Network | Limit update peer-sharing to the local network (Delivery Optimization policy) | Low | ✔ |
 | Storage | Clean temporary files (quarantined for 7 days, undoable) | Low | – |
 | Storage | Turn on Storage Sense | Low | – |
@@ -99,7 +110,7 @@ NEXORA/
 │       ├── Assets/                  App icon (.ico) and MSIX logos (generated from the vector logo)
 │       ├── Package.appxmanifest     MSIX manifest
 │       └── app.manifest             asInvoker, PerMonitorV2 DPI
-├── tests/Nexora.Core.Tests/         79 xUnit tests
+├── tests/Nexora.Core.Tests/         98 xUnit tests
 ├── build/                           build.ps1, package-msix.ps1, publish-unpackaged.ps1,
 │                                    new-dev-certificate.ps1, assets/generate_assets.py
 ├── docs/ARCHITECTURE.md
@@ -222,7 +233,7 @@ used for latency measurement.
 
 ## Testing
 
-`tests/Nexora.Core.Tests` (79 tests) covers:
+`tests/Nexora.Core.Tests` (98 tests) covers:
 
 * **Performance calculations:** average FPS, 1 % / 0.1 % lows, percentiles, session analysis, ring buffers.
 * **Latency calculations:** jitter, loss, median, stability, quality classification, DNS packet format,
@@ -237,6 +248,13 @@ used for latency measurement.
 * **Error handling:** failing sensors, corrupt files, log sanitization, structured logging.
 
 ---
+
+### Automated UI test
+
+`build/test/ui-smoke.ps1` launches NEXORA as a standard (non-admin) user on Windows and clicks through every page,
+the scan, network and DNS tests, performance tests and the before/after report, Quick Optimize → Undo → Restore,
+Game Boost on/off, the overlay and smart game detection — and fails on any crash, logged error or change to mouse
+settings. Releases are only published when it passes (`.github/workflows/release.yml`).
 
 ## Known limitations
 
