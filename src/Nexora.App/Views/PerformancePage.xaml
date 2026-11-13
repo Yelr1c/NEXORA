@@ -167,11 +167,13 @@
                                 <controls:StatTile Grid.Column="1" Label="GPU usage" Value="{x:Bind ViewModel.ResultGpu, Mode=OneWay}" />
                                 <controls:StatTile Grid.Column="2" Label="RAM usage" Value="{x:Bind ViewModel.ResultRam, Mode=OneWay}" />
                             </Grid>
-                            <ItemsRepeater ItemsSource="{x:Bind ViewModel.ResultInsights}">
-                                <ItemsRepeater.Layout>
-                                    <StackLayout Spacing="8" />
-                                </ItemsRepeater.Layout>
-                                <ItemsRepeater.ItemTemplate>
+                            <ItemsControl ItemsSource="{x:Bind ViewModel.ResultInsights}">
+                                <ItemsControl.ItemsPanel>
+                                    <ItemsPanelTemplate>
+                                        <StackPanel Spacing="8" />
+                                    </ItemsPanelTemplate>
+                                </ItemsControl.ItemsPanel>
+                                <ItemsControl.ItemTemplate>
                                     <DataTemplate x:DataType="x:String">
                                         <Grid ColumnSpacing="10">
                                             <Grid.ColumnDefinitions>
@@ -182,8 +184,8 @@
                                             <TextBlock Grid.Column="1" Text="{x:Bind}" Style="{StaticResource BodyStyle}" />
                                         </Grid>
                                     </DataTemplate>
-                                </ItemsRepeater.ItemTemplate>
-                            </ItemsRepeater>
+                                </ItemsControl.ItemTemplate>
+                            </ItemsControl>
                         </StackPanel>
                     </StackPanel>
                 </Border>
@@ -205,11 +207,13 @@
                             <TextBlock Grid.Column="2" Text="MEMORY" Style="{StaticResource CardLabelStyle}" />
                             <TextBlock Grid.Column="3" Text="GPU" Style="{StaticResource CardLabelStyle}" />
                         </Grid>
-                        <ItemsRepeater ItemsSource="{x:Bind ViewModel.TopProcesses}">
-                            <ItemsRepeater.Layout>
-                                <StackLayout Spacing="6" />
-                            </ItemsRepeater.Layout>
-                            <ItemsRepeater.ItemTemplate>
+                        <ItemsControl ItemsSource="{x:Bind ViewModel.TopProcesses}">
+                            <ItemsControl.ItemsPanel>
+                                <ItemsPanelTemplate>
+                                    <StackPanel Spacing="6" />
+                                </ItemsPanelTemplate>
+                            </ItemsControl.ItemsPanel>
+                            <ItemsControl.ItemTemplate>
                                 <DataTemplate x:DataType="vm:ProcessUsageViewModel">
                                     <Grid ColumnSpacing="8">
                                         <Grid.ColumnDefinitions>
@@ -224,8 +228,8 @@
                                         <TextBlock Grid.Column="3" Text="{x:Bind GpuText}" FontSize="13" />
                                     </Grid>
                                 </DataTemplate>
-                            </ItemsRepeater.ItemTemplate>
-                        </ItemsRepeater>
+                            </ItemsControl.ItemTemplate>
+                        </ItemsControl>
                     </StackPanel>
                 </Border>
             </Grid>

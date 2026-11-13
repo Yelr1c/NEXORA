@@ -66,11 +66,13 @@
 
         <!-- Optimizations -->
         <ScrollViewer Grid.Row="3" VerticalScrollBarVisibility="Auto" Visibility="{x:Bind ViewModel.IsOptimizationsSection, Mode=OneWay}">
-            <ItemsRepeater ItemsSource="{x:Bind ViewModel.Items}" Margin="0,0,0,32">
-                <ItemsRepeater.Layout>
-                    <StackLayout Spacing="12" />
-                </ItemsRepeater.Layout>
-                <ItemsRepeater.ItemTemplate>
+            <ItemsControl ItemsSource="{x:Bind ViewModel.Items}" Margin="0,0,0,32">
+                <ItemsControl.ItemsPanel>
+                    <ItemsPanelTemplate>
+                        <StackPanel Spacing="12" />
+                    </ItemsPanelTemplate>
+                </ItemsControl.ItemsPanel>
+                <ItemsControl.ItemTemplate>
                     <DataTemplate x:DataType="vm:OptimizationItemViewModel">
                         <Border Style="{StaticResource CardStyle}">
                             <Grid RowSpacing="10" ColumnSpacing="16">
@@ -143,8 +145,8 @@
                             </Grid>
                         </Border>
                     </DataTemplate>
-                </ItemsRepeater.ItemTemplate>
-            </ItemsRepeater>
+                </ItemsControl.ItemTemplate>
+            </ItemsControl>
         </ScrollViewer>
 
         <!-- Startup apps -->

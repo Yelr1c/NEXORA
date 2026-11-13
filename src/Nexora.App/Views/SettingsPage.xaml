@@ -19,16 +19,18 @@
                     <ComboBox Header="Theme" MinWidth="260" ItemsSource="{x:Bind ViewModel.ThemeOptions}" SelectedItem="{x:Bind ViewModel.SelectedTheme, Mode=TwoWay}" />
                     <StackPanel Spacing="8">
                         <TextBlock Text="Accent color" />
-                        <ItemsRepeater ItemsSource="{x:Bind ViewModel.Accents}">
-                            <ItemsRepeater.Layout>
-                                <StackLayout Orientation="Horizontal" Spacing="10" />
-                            </ItemsRepeater.Layout>
-                            <ItemsRepeater.ItemTemplate>
+                        <ItemsControl ItemsSource="{x:Bind ViewModel.Accents}">
+                            <ItemsControl.ItemsPanel>
+                                <ItemsPanelTemplate>
+                                    <StackPanel Orientation="Horizontal" Spacing="10" />
+                                </ItemsPanelTemplate>
+                            </ItemsControl.ItemsPanel>
+                            <ItemsControl.ItemTemplate>
                                 <DataTemplate x:DataType="vm:AccentOption">
                                     <Button Width="34" Height="34" Padding="0" CornerRadius="17" Background="{x:Bind Brush}" ToolTipService.ToolTip="{x:Bind Name}" Click="OnAccentClick" Tag="{x:Bind Hex}" />
                                 </DataTemplate>
-                            </ItemsRepeater.ItemTemplate>
-                        </ItemsRepeater>
+                            </ItemsControl.ItemTemplate>
+                        </ItemsControl>
                         <TextBlock Style="{StaticResource BodySubtleStyle}" FontSize="12" Text="Charts and highlights update immediately; some built-in controls pick up the new accent after restarting NEXORA." />
                     </StackPanel>
                     <ToggleSwitch Header="Enable animations" IsOn="{x:Bind ViewModel.AnimationsEnabled, Mode=TwoWay}" />

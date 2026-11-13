@@ -27,11 +27,13 @@
             </Grid>
             <StackPanel Grid.Column="1" VerticalAlignment="Center" Spacing="6">
                 <TextBlock Style="{StaticResource CardLabelStyle}" Text="NEXORA SYSTEM ANALYSIS" Margin="0,0,0,8" />
-                <ItemsRepeater ItemsSource="{x:Bind ViewModel.Steps}">
-                    <ItemsRepeater.Layout>
-                        <StackLayout Spacing="6" />
-                    </ItemsRepeater.Layout>
-                    <ItemsRepeater.ItemTemplate>
+                <ItemsControl ItemsSource="{x:Bind ViewModel.Steps}">
+                    <ItemsControl.ItemsPanel>
+                        <ItemsPanelTemplate>
+                            <StackPanel Spacing="6" />
+                        </ItemsPanelTemplate>
+                    </ItemsControl.ItemsPanel>
+                    <ItemsControl.ItemTemplate>
                         <DataTemplate x:DataType="vm:ScanStepViewModel">
                             <Grid ColumnSpacing="12" Height="26">
                                 <Grid.ColumnDefinitions>
@@ -44,8 +46,8 @@
                                 <TextBlock Grid.Column="1" Text="{x:Bind Name}" VerticalAlignment="Center" FontSize="14" />
                             </Grid>
                         </DataTemplate>
-                    </ItemsRepeater.ItemTemplate>
-                </ItemsRepeater>
+                    </ItemsControl.ItemTemplate>
+                </ItemsControl>
                 <HyperlinkButton Margin="0,12,0,0" Padding="0" Content="Cancel scan" Command="{x:Bind ViewModel.CancelCommand}" />
             </StackPanel>
         </Grid>
@@ -86,11 +88,13 @@
                             </StackPanel>
                             <Button HorizontalAlignment="Right" VerticalAlignment="Center" Style="{StaticResource PrimaryButtonStyle}" Content="Apply selected" Command="{x:Bind ViewModel.ApplySelectedCommand}" />
                         </Grid>
-                        <ItemsRepeater ItemsSource="{x:Bind ViewModel.Recommendations}">
-                            <ItemsRepeater.Layout>
-                                <StackLayout Spacing="8" />
-                            </ItemsRepeater.Layout>
-                            <ItemsRepeater.ItemTemplate>
+                        <ItemsControl ItemsSource="{x:Bind ViewModel.Recommendations}">
+                            <ItemsControl.ItemsPanel>
+                                <ItemsPanelTemplate>
+                                    <StackPanel Spacing="8" />
+                                </ItemsPanelTemplate>
+                            </ItemsControl.ItemsPanel>
+                            <ItemsControl.ItemTemplate>
                                 <DataTemplate x:DataType="vm:RecommendationViewModel">
                                     <Border Style="{StaticResource InsetStyle}" Padding="14">
                                         <Grid ColumnSpacing="14">
@@ -118,19 +122,21 @@
                                         </Grid>
                                     </Border>
                                 </DataTemplate>
-                            </ItemsRepeater.ItemTemplate>
-                        </ItemsRepeater>
+                            </ItemsControl.ItemTemplate>
+                        </ItemsControl>
                     </StackPanel>
                 </Border>
 
                 <Border Style="{StaticResource CardStyle}">
                     <StackPanel Spacing="14">
                         <TextBlock Style="{StaticResource SectionTitleStyle}" Text="Findings" />
-                        <ItemsRepeater ItemsSource="{x:Bind ViewModel.Findings}">
-                            <ItemsRepeater.Layout>
-                                <UniformGridLayout MinItemWidth="320" MinColumnSpacing="10" MinRowSpacing="10" ItemsStretch="Fill" />
-                            </ItemsRepeater.Layout>
-                            <ItemsRepeater.ItemTemplate>
+                        <ItemsControl ItemsSource="{x:Bind ViewModel.Findings}">
+                            <ItemsControl.ItemsPanel>
+                                <ItemsPanelTemplate>
+                                    <StackPanel Spacing="10" />
+                                </ItemsPanelTemplate>
+                            </ItemsControl.ItemsPanel>
+                            <ItemsControl.ItemTemplate>
                                 <DataTemplate x:DataType="vm:FindingViewModel">
                                     <Border Style="{StaticResource InsetStyle}" Padding="14" MinHeight="84">
                                         <Grid ColumnSpacing="12">
@@ -147,8 +153,8 @@
                                         </Grid>
                                     </Border>
                                 </DataTemplate>
-                            </ItemsRepeater.ItemTemplate>
-                        </ItemsRepeater>
+                            </ItemsControl.ItemTemplate>
+                        </ItemsControl>
                     </StackPanel>
                 </Border>
             </StackPanel>

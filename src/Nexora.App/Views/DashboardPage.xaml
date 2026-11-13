@@ -29,13 +29,15 @@
                         <TextBlock Style="{StaticResource CardLabelStyle}" Text="SYSTEM PERFORMANCE" />
                         <TextBlock FontSize="22" FontWeight="SemiBold" Text="{x:Bind ViewModel.ScoreSummary, Mode=OneWay}" TextWrapping="WrapWholeWords" />
                         <TextBlock Style="{StaticResource BodySubtleStyle}" Text="The score combines measured CPU, GPU and memory headroom, storage, network quality, temperatures, startup load and gaming settings. It describes system health — it is not an FPS prediction." />
-                        <ItemsRepeater ItemsSource="{x:Bind ViewModel.ScoreComponents}">
-                            <ItemsRepeater.Layout>
-                                <UniformGridLayout MinItemWidth="200" MinItemHeight="44" MinColumnSpacing="10" MinRowSpacing="10" ItemsStretch="Fill" />
-                            </ItemsRepeater.Layout>
-                            <ItemsRepeater.ItemTemplate>
+                        <ItemsControl ItemsSource="{x:Bind ViewModel.ScoreComponents}">
+                            <ItemsControl.ItemsPanel>
+                                <ItemsPanelTemplate>
+                                    <VariableSizedWrapGrid Orientation="Horizontal" ItemWidth="236" ItemHeight="66" />
+                                </ItemsPanelTemplate>
+                            </ItemsControl.ItemsPanel>
+                            <ItemsControl.ItemTemplate>
                                 <DataTemplate x:DataType="vm:ScoreComponentViewModel">
-                                    <Border Style="{StaticResource InsetStyle}">
+                                    <Border Style="{StaticResource InsetStyle}" Margin="0,0,10,10">
                                         <Grid ColumnSpacing="8">
                                             <Grid.ColumnDefinitions>
                                                 <ColumnDefinition Width="*" />
@@ -49,8 +51,8 @@
                                         </Grid>
                                     </Border>
                                 </DataTemplate>
-                            </ItemsRepeater.ItemTemplate>
-                        </ItemsRepeater>
+                            </ItemsControl.ItemTemplate>
+                        </ItemsControl>
                     </StackPanel>
                 </Grid>
             </Border>

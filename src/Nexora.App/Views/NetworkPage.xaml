@@ -124,11 +124,13 @@
                 <StackPanel Spacing="14">
                     <TextBlock Style="{StaticResource SectionTitleStyle}" Text="Diagnosis" />
                     <TextBlock Style="{StaticResource BodySubtleStyle}" Text="Run a test to get an explanation of your results. NEXORA never claims that settings can shorten the physical path to a game server." />
-                    <ItemsRepeater ItemsSource="{x:Bind ViewModel.Insights}">
-                        <ItemsRepeater.Layout>
-                            <StackLayout Spacing="10" />
-                        </ItemsRepeater.Layout>
-                        <ItemsRepeater.ItemTemplate>
+                    <ItemsControl ItemsSource="{x:Bind ViewModel.Insights}">
+                        <ItemsControl.ItemsPanel>
+                            <ItemsPanelTemplate>
+                                <StackPanel Spacing="10" />
+                            </ItemsPanelTemplate>
+                        </ItemsControl.ItemsPanel>
+                        <ItemsControl.ItemTemplate>
                             <DataTemplate x:DataType="vm:InsightViewModel">
                                 <Border Style="{StaticResource InsetStyle}" Padding="14">
                                     <Grid ColumnSpacing="14">
@@ -144,8 +146,8 @@
                                     </Grid>
                                 </Border>
                             </DataTemplate>
-                        </ItemsRepeater.ItemTemplate>
-                    </ItemsRepeater>
+                        </ItemsControl.ItemTemplate>
+                    </ItemsControl>
                 </StackPanel>
             </Border>
         </StackPanel>
