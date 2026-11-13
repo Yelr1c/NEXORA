@@ -33,6 +33,8 @@ public sealed class LineChart : UserControl
 
     private readonly Canvas _canvas = new();
     private readonly Polyline _line = new() { StrokeThickness = 2, StrokeLineJoin = PenLineJoin.Round };
+    private readonly Polyline _glow = new() { StrokeThickness = 7, StrokeLineJoin = PenLineJoin.Round, Opacity = 0.22 };
+    private bool _revealed;
     private readonly Polygon _fill = new();
     private readonly Line[] _grid = [new(), new(), new()];
     private readonly TextBlock _maxLabel = new() { FontSize = 10, Opacity = 0.55 };
@@ -48,6 +50,7 @@ public sealed class LineChart : UserControl
         }
 
         _canvas.Children.Add(_fill);
+        _canvas.Children.Add(_glow);
         _canvas.Children.Add(_line);
         _canvas.Children.Add(_maxLabel);
         Content = _canvas;
@@ -96,6 +99,7 @@ public sealed class LineChart : UserControl
         }
 
         _line.Points.Clear();
+        _glow.Points.Clear();
         _fill.Points.Clear();
         if (data.Count < 2)
         {
@@ -116,11 +120,24 @@ public sealed class LineChart : UserControl
             var v = Math.Clamp(double.IsFinite(data[i]) ? data[i] : 0, 0, max);
             var point = new Point(offset + (i * step), top + (usable * (1 - (v / max))));
             _line.Points.Add(point);
+            _glow.Points.Add(point);
             _fill.Points.Add(point);
         }
 
         _fill.Points.Add(new Point(offset + ((data.Count - 1) * step), height));
         _line.Stroke = new SolidColorBrush(color);
+        _glow.Stroke = new SolidColorBrush(color);
+        if (!_revealed)
+        {
+            // First data: fade the chart in.
+            _revealed = true;
+            if (Motion.Enabled)
+            {
+                _canvas.Opacity = 0;
+                _canvas.OpacityTransition = new ScalarTransition { Duration = TimeSpan.FromMilliseconds(600) };
+                DispatcherQueue.TryEnqueue(() => _canvas.Opacity = 1);
+            }
+        }
         var gradient = new LinearGradientBrush { StartPoint = new Point(0, 0), EndPoint = new Point(0, 1) };
         gradient.GradientStops.Add(new GradientStop { Color = Color.FromArgb(0x55, color.R, color.G, color.B), Offset = 0 });
         gradient.GradientStops.Add(new GradientStop { Color = Color.FromArgb(0x00, color.R, color.G, color.B), Offset = 1 });

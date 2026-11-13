@@ -8,7 +8,7 @@
     Background="Transparent">
 
     <ScrollViewer VerticalScrollBarVisibility="Auto">
-        <StackPanel helpers:Entrance.Stagger="True" Padding="32,20,32,32" Spacing="20" MaxWidth="1440">
+        <StackPanel Padding="28,18,28,32" Spacing="18" MaxWidth="1560">
             <StackPanel Spacing="2">
                 <TextBlock Style="{StaticResource PageTitleStyle}" Text="Performance" />
                 <TextBlock Style="{StaticResource PageSubtitleStyle}" Text="Live FPS, frame times and hardware utilization. FPS is measured from DirectX present events — nothing is injected into your games." />
@@ -25,8 +25,9 @@
                 </InfoBar.ActionButton>
             </InfoBar>
 
+            <controls:BentoGrid helpers:Entrance.Stagger="True" ColumnSpacing="18" RowSpacing="18">
             <!-- Live FPS -->
-            <Border Style="{StaticResource HeroCardStyle}">
+            <Border controls:BentoGrid.Span="12" Style="{StaticResource IndigoCardStyle}" Padding="26">
                 <Grid ColumnSpacing="32">
                     <Grid.ColumnDefinitions>
                         <ColumnDefinition Width="260" />
@@ -35,7 +36,7 @@
                     <StackPanel Spacing="8" VerticalAlignment="Center">
                         <TextBlock Style="{StaticResource CardLabelStyle}" Text="CURRENT FPS" />
                         <StackPanel Orientation="Horizontal" Spacing="6">
-                            <TextBlock Text="{x:Bind ViewModel.FpsText, Mode=OneWay}" FontSize="64" FontWeight="SemiBold" TextLineBounds="Tight" />
+                            <TextBlock Text="{x:Bind ViewModel.FpsText, Mode=OneWay}" FontSize="72" FontWeight="SemiBold" TextLineBounds="Tight" Foreground="{StaticResource NexoraFpsBrush}" />
                             <TextBlock Text="FPS" FontSize="16" Opacity="0.6" VerticalAlignment="Bottom" />
                         </StackPanel>
                         <TextBlock FontSize="14">
@@ -84,7 +85,7 @@
             </Border>
 
             <!-- Hardware -->
-            <Border Style="{StaticResource CardStyle}">
+            <Border controls:BentoGrid.Span="12" Style="{StaticResource GlassCardStyle}">
                 <StackPanel Spacing="14">
                     <TextBlock Style="{StaticResource SectionTitleStyle}" Text="Hardware" />
                     <Grid ColumnSpacing="12" RowSpacing="12">
@@ -132,14 +133,9 @@
                 </StackPanel>
             </Border>
 
-            <Grid ColumnSpacing="16">
-                <Grid.ColumnDefinitions>
-                    <ColumnDefinition Width="3*" />
-                    <ColumnDefinition Width="2*" />
-                </Grid.ColumnDefinitions>
 
                 <!-- Performance test -->
-                <Border Style="{StaticResource CardStyle}">
+                <Border controls:BentoGrid.Span="8" Style="{StaticResource BlueCardStyle}">
                     <StackPanel Spacing="16">
                         <StackPanel Spacing="4">
                             <TextBlock Style="{StaticResource SectionTitleStyle}" Text="Performance test" />
@@ -211,7 +207,7 @@
                 </Border>
 
                 <!-- Background usage -->
-                <Border Grid.Column="1" Style="{StaticResource CardStyle}">
+                <Border controls:BentoGrid.Span="4" Style="{StaticResource TealCardStyle}">
                     <StackPanel Spacing="12">
                         <TextBlock Style="{StaticResource SectionTitleStyle}" Text="Top resource usage" />
                         <TextBlock Style="{StaticResource BodySubtleStyle}" Text="Processes using the most CPU right now. Manage them on the Processes page." />
@@ -252,9 +248,8 @@
                         </ItemsControl>
                     </StackPanel>
                 </Border>
-            </Grid>
             <!-- NEXORA PERFORMANCE REPORT: before / after -->
-            <Border Style="{StaticResource HeroCardStyle}">
+            <Border controls:BentoGrid.Span="12" Style="{StaticResource PurpleCardStyle}" Padding="26">
                 <StackPanel Spacing="16">
                     <StackPanel Spacing="2">
                         <TextBlock Style="{StaticResource CardLabelStyle}" Text="NEXORA PERFORMANCE REPORT" />
@@ -331,7 +326,7 @@
             </Border>
 
             <!-- Previous tests -->
-            <Border Style="{StaticResource CardStyle}" Visibility="{x:Bind ViewModel.HasSessionHistory, Mode=OneWay}">
+            <Border controls:BentoGrid.Span="12" Style="{StaticResource GlassCardStyle}" Visibility="{x:Bind ViewModel.HasSessionHistory, Mode=OneWay}">
                 <StackPanel Spacing="12">
                     <TextBlock Style="{StaticResource SectionTitleStyle}" Text="Previous tests" />
                     <Grid ColumnSpacing="12" Opacity="0.7">
@@ -379,6 +374,7 @@
                     </ItemsControl>
                 </StackPanel>
             </Border>
+            </controls:BentoGrid>
         </StackPanel>
     </ScrollViewer>
 </Page>

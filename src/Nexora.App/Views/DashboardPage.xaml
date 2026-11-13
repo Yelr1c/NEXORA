@@ -8,7 +8,8 @@
     Background="Transparent">
 
     <ScrollViewer VerticalScrollBarVisibility="Auto">
-        <StackPanel helpers:Entrance.Stagger="True" Padding="32,20,32,32" Spacing="20" MaxWidth="1440">
+        <StackPanel Padding="28,18,28,32" Spacing="18" MaxWidth="1560">
+            <!-- Header -->
             <Grid>
                 <StackPanel Spacing="2">
                     <TextBlock Style="{StaticResource PageTitleStyle}" Text="Dashboard" />
@@ -23,185 +24,336 @@
                 <Button HorizontalAlignment="Right" VerticalAlignment="Center" Style="{StaticResource HeroButtonStyle}" Content="SCAN MY PC" Command="{x:Bind ViewModel.ScanCommand}" />
             </Grid>
 
-            <!-- Game Boost -->
-            <Border Style="{StaticResource CardStyle}" Padding="24,20">
-                <Border.Background>
-                    <LinearGradientBrush StartPoint="0,0" EndPoint="1,0">
-                        <GradientStop Offset="0" Color="#2E7C6CFF" />
-                        <GradientStop Offset="0.6" Color="#141FB6FF" />
-                        <GradientStop Offset="1" Color="#05FFFFFF" />
-                    </LinearGradientBrush>
-                </Border.Background>
-                <Grid ColumnSpacing="24">
-                    <Grid.ColumnDefinitions>
-                        <ColumnDefinition Width="Auto" />
-                        <ColumnDefinition Width="*" />
-                        <ColumnDefinition Width="Auto" />
-                    </Grid.ColumnDefinitions>
-                    <Grid Width="64" Height="64">
-                        <Ellipse x:Name="BoostPulse" Width="64" Height="64" StrokeThickness="2" Stroke="{StaticResource NexoraAccentBrush}" RenderTransformOrigin="0.5,0.5" Opacity="0">
-                            <Ellipse.RenderTransform>
-                                <CompositeTransform />
-                            </Ellipse.RenderTransform>
-                        </Ellipse>
-                        <Ellipse Width="56" Height="56">
-                            <Ellipse.Fill>
-                                <LinearGradientBrush StartPoint="0,0" EndPoint="1,1">
-                                    <GradientStop Offset="0" Color="#FF1FB6FF" />
-                                    <GradientStop Offset="1" Color="#FF7C6CFF" />
-                                </LinearGradientBrush>
-                            </Ellipse.Fill>
-                        </Ellipse>
-                        <FontIcon Glyph="&#xE945;" FontSize="24" Foreground="White" />
-                    </Grid>
-                    <StackPanel Grid.Column="1" VerticalAlignment="Center" Spacing="4">
-                        <TextBlock FontSize="20" FontWeight="SemiBold">
-                            <Run Text="GAME BOOST" CharacterSpacing="120" />
-                            <Run Text="  " />
-                            <Run Text="{x:Bind ViewModel.BoostState, Mode=OneWay}" Foreground="{StaticResource NexoraAccentBrush}" />
-                        </TextBlock>
-                        <TextBlock Text="{x:Bind ViewModel.BoostDetail, Mode=OneWay}" Style="{StaticResource BodySubtleStyle}" />
-                    </StackPanel>
-                    <Button Grid.Column="2" VerticalAlignment="Center" Style="{StaticResource HeroButtonStyle}" Content="{x:Bind ViewModel.BoostButtonText, Mode=OneWay}" Command="{x:Bind ViewModel.ToggleBoostCommand}" />
-                </Grid>
-            </Border>
+            <controls:BentoGrid x:Name="Bento" helpers:Entrance.Stagger="True" ColumnSpacing="18" RowSpacing="18">
 
-            <!-- Hero: performance score -->
-            <Border Style="{StaticResource HeroCardStyle}">
-                <Grid ColumnSpacing="36">
-                    <Grid.ColumnDefinitions>
-                        <ColumnDefinition Width="Auto" />
-                        <ColumnDefinition Width="*" />
-                    </Grid.ColumnDefinitions>
-                    <controls:ScoreRing Width="230" Height="230" Thickness="14" Value="{x:Bind ViewModel.ScoreValue, Mode=OneWay}" Label="{x:Bind ViewModel.ScoreRating, Mode=OneWay}" />
-                    <StackPanel Grid.Column="1" VerticalAlignment="Center" Spacing="14">
-                        <TextBlock Style="{StaticResource CardLabelStyle}" Text="SYSTEM PERFORMANCE" />
-                        <TextBlock FontSize="22" FontWeight="SemiBold" Text="{x:Bind ViewModel.ScoreSummary, Mode=OneWay}" TextWrapping="WrapWholeWords" />
-                        <TextBlock Style="{StaticResource BodySubtleStyle}" Text="The score combines measured CPU, GPU and memory headroom, storage, network quality, temperatures, startup load and gaming settings. It describes system health — it is not an FPS prediction." />
-                        <ItemsControl ItemsSource="{x:Bind ViewModel.ScoreComponents}">
+                <!-- ===== TOP: score · health · gaming ===== -->
+                <Border controls:BentoGrid.Span="6" Style="{StaticResource PurpleCardStyle}" Padding="26" helpers:CardAction.NavigateTo="scan" AutomationProperties.Name="Performance score card">
+                    <Grid ColumnSpacing="28">
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="Auto" />
+                            <ColumnDefinition Width="*" />
+                        </Grid.ColumnDefinitions>
+                        <controls:ScoreRing Width="210" Height="210" Thickness="14" Value="{x:Bind ViewModel.ScoreValue, Mode=OneWay}" Label="{x:Bind ViewModel.ScoreRating, Mode=OneWay}" />
+                        <StackPanel Grid.Column="1" VerticalAlignment="Center" Spacing="12">
+                            <TextBlock Style="{StaticResource OnColorLabelStyle}" Text="SYSTEM PERFORMANCE" />
+                            <TextBlock FontSize="20" FontWeight="SemiBold" Text="{x:Bind ViewModel.ScoreSummary, Mode=OneWay}" TextWrapping="WrapWholeWords" />
+                            <ItemsControl ItemsSource="{x:Bind ViewModel.ScoreComponents}">
+                                <ItemsControl.ItemsPanel>
+                                    <ItemsPanelTemplate>
+                                        <VariableSizedWrapGrid Orientation="Horizontal" ItemWidth="170" ItemHeight="52" />
+                                    </ItemsPanelTemplate>
+                                </ItemsControl.ItemsPanel>
+                                <ItemsControl.ItemTemplate>
+                                    <DataTemplate x:DataType="vm:ScoreComponentViewModel">
+                                        <Border Margin="0,0,8,8" Padding="10,6" CornerRadius="10" Background="#1FFFFFFF">
+                                            <Grid ColumnSpacing="6">
+                                                <Grid.ColumnDefinitions>
+                                                    <ColumnDefinition Width="*" />
+                                                    <ColumnDefinition Width="Auto" />
+                                                </Grid.ColumnDefinitions>
+                                                <TextBlock Text="{x:Bind Name}" FontSize="12" VerticalAlignment="Center" TextTrimming="CharacterEllipsis" />
+                                                <TextBlock Grid.Column="1" Text="{x:Bind ScoreText}" FontSize="16" FontWeight="SemiBold" VerticalAlignment="Center" />
+                                            </Grid>
+                                        </Border>
+                                    </DataTemplate>
+                                </ItemsControl.ItemTemplate>
+                            </ItemsControl>
+                        </StackPanel>
+                    </Grid>
+                </Border>
+
+                <Border controls:BentoGrid.Span="3" controls:BentoGrid.CompactSpan="6" Style="{StaticResource TealCardStyle}" helpers:CardAction.NavigateTo="performance" AutomationProperties.Name="System health card">
+                    <StackPanel Spacing="14">
+                        <StackPanel Orientation="Horizontal" Spacing="10">
+                            <Border Style="{StaticResource CardIconBadgeStyle}">
+                                <FontIcon Glyph="&#xE95E;" FontSize="16" />
+                            </Border>
+                            <TextBlock Style="{StaticResource OnColorLabelStyle}" Text="SYSTEM HEALTH" VerticalAlignment="Center" />
+                        </StackPanel>
+                        <TextBlock Text="{x:Bind ViewModel.HealthHeadline, Mode=OneWay}" FontSize="22" FontWeight="SemiBold" TextWrapping="WrapWholeWords" />
+                        <ItemsControl ItemsSource="{x:Bind ViewModel.HealthRows}">
                             <ItemsControl.ItemsPanel>
                                 <ItemsPanelTemplate>
-                                    <VariableSizedWrapGrid Orientation="Horizontal" ItemWidth="236" ItemHeight="66" />
+                                    <StackPanel Spacing="9" />
                                 </ItemsPanelTemplate>
                             </ItemsControl.ItemsPanel>
                             <ItemsControl.ItemTemplate>
-                                <DataTemplate x:DataType="vm:ScoreComponentViewModel">
-                                    <Border Style="{StaticResource InsetStyle}" Margin="0,0,10,10">
-                                        <Grid ColumnSpacing="8">
+                                <DataTemplate x:DataType="vm:InfoRow">
+                                    <Grid ColumnSpacing="10">
+                                        <Grid.ColumnDefinitions>
+                                            <ColumnDefinition Width="Auto" />
+                                            <ColumnDefinition Width="*" />
+                                            <ColumnDefinition Width="Auto" />
+                                        </Grid.ColumnDefinitions>
+                                        <Ellipse Width="8" Height="8" VerticalAlignment="Center" Fill="{x:Bind Level, Converter={StaticResource StatusBrush}}" />
+                                        <TextBlock Grid.Column="1" Text="{x:Bind Label}" FontSize="13" Style="{StaticResource OnColorSubtleStyle}" />
+                                        <TextBlock Grid.Column="2" Text="{x:Bind Value}" FontSize="13" FontWeight="SemiBold" />
+                                    </Grid>
+                                </DataTemplate>
+                            </ItemsControl.ItemTemplate>
+                        </ItemsControl>
+                    </StackPanel>
+                </Border>
+
+                <Border controls:BentoGrid.Span="3" controls:BentoGrid.CompactSpan="6" Style="{StaticResource IndigoCardStyle}" helpers:CardAction.NavigateTo="games" AutomationProperties.Name="Gaming status card">
+                    <StackPanel Spacing="12">
+                        <Grid>
+                            <TextBlock Style="{StaticResource OnColorLabelStyle}" Text="GAMING STATUS" VerticalAlignment="Center" />
+                            <Grid Width="44" Height="44" HorizontalAlignment="Right">
+                                <Ellipse x:Name="BoostPulse" Width="44" Height="44" StrokeThickness="2" Stroke="{StaticResource NexoraAccentBrush}" RenderTransformOrigin="0.5,0.5" Opacity="0">
+                                    <Ellipse.RenderTransform>
+                                        <CompositeTransform />
+                                    </Ellipse.RenderTransform>
+                                </Ellipse>
+                                <Ellipse Width="38" Height="38">
+                                    <Ellipse.Fill>
+                                        <LinearGradientBrush StartPoint="0,0" EndPoint="1,1">
+                                            <GradientStop Offset="0" Color="#FF1FB6FF" />
+                                            <GradientStop Offset="1" Color="#FF7C6CFF" />
+                                        </LinearGradientBrush>
+                                    </Ellipse.Fill>
+                                </Ellipse>
+                                <FontIcon Glyph="&#xE945;" FontSize="16" Foreground="White" />
+                            </Grid>
+                        </Grid>
+                        <TextBlock Text="{x:Bind ViewModel.GamingHeadline, Mode=OneWay}" FontSize="22" FontWeight="SemiBold" TextTrimming="CharacterEllipsis" />
+                        <StackPanel Orientation="Horizontal" Spacing="6">
+                            <TextBlock Text="{x:Bind ViewModel.FpsText, Mode=OneWay}" Style="{StaticResource BigValueStyle}" />
+                            <TextBlock Text="FPS" Style="{StaticResource OnColorLabelStyle}" VerticalAlignment="Bottom" />
+                        </StackPanel>
+                        <TextBlock Text="{x:Bind ViewModel.FpsDetail, Mode=OneWay}" Style="{StaticResource OnColorSubtleStyle}" />
+                        <TextBlock Style="{StaticResource OnColorSubtleStyle}">
+                            <Run Text="Game Boost: " />
+                            <Run Text="{x:Bind ViewModel.BoostState, Mode=OneWay}" FontWeight="SemiBold" Foreground="White" />
+                        </TextBlock>
+                        <Button HorizontalAlignment="Stretch" Style="{StaticResource HeroButtonStyle}" Padding="12,10" Content="{x:Bind ViewModel.BoostButtonText, Mode=OneWay}" Command="{x:Bind ViewModel.ToggleBoostCommand}" ToolTipService.ToolTip="{x:Bind ViewModel.BoostDetail, Mode=OneWay}" />
+                    </StackPanel>
+                </Border>
+
+                <!-- ===== MIDDLE: CPU · GPU · RAM + network ===== -->
+                <Border controls:BentoGrid.Span="4" controls:BentoGrid.CompactSpan="6" Style="{StaticResource BlueCardStyle}" helpers:CardAction.NavigateTo="performance" AutomationProperties.Name="CPU card">
+                    <StackPanel Spacing="10">
+                        <StackPanel Orientation="Horizontal" Spacing="10">
+                            <Border Style="{StaticResource CardIconBadgeStyle}">
+                                <FontIcon Glyph="&#xE950;" FontSize="16" />
+                            </Border>
+                            <StackPanel VerticalAlignment="Center">
+                                <TextBlock Style="{StaticResource OnColorLabelStyle}" Text="PROCESSOR" />
+                                <TextBlock Text="{x:Bind ViewModel.CpuDetail, Mode=OneWay}" Style="{StaticResource OnColorSubtleStyle}" />
+                            </StackPanel>
+                        </StackPanel>
+                        <controls:AnimatedNumber FontSize="48" FontWeight="SemiBold" Suffix="%" Value="{x:Bind ViewModel.Cpu, Mode=OneWay}" />
+                        <controls:LineChart Height="96" Capacity="60" Maximum="100" ShowGrid="False" Stroke="White" Values="{x:Bind ViewModel.CpuHistory, Mode=OneWay}" />
+                        <TextBlock Style="{StaticResource OnColorSubtleStyle}">
+                            <Run Text="Temperature " />
+                            <Run Text="{x:Bind ViewModel.CpuTempText, Mode=OneWay}" FontWeight="SemiBold" Foreground="White" />
+                        </TextBlock>
+                    </StackPanel>
+                </Border>
+
+                <Border controls:BentoGrid.Span="4" controls:BentoGrid.CompactSpan="6" Style="{StaticResource PurpleCardStyle}" helpers:CardAction.NavigateTo="performance" AutomationProperties.Name="GPU card">
+                    <StackPanel Spacing="10">
+                        <StackPanel Orientation="Horizontal" Spacing="10">
+                            <Border Style="{StaticResource CardIconBadgeStyle}">
+                                <FontIcon Glyph="&#xE7F4;" FontSize="16" />
+                            </Border>
+                            <StackPanel VerticalAlignment="Center">
+                                <TextBlock Style="{StaticResource OnColorLabelStyle}" Text="GRAPHICS" />
+                                <TextBlock Text="{x:Bind ViewModel.GpuDetail, Mode=OneWay}" Style="{StaticResource OnColorSubtleStyle}" TextTrimming="CharacterEllipsis" />
+                            </StackPanel>
+                        </StackPanel>
+                        <controls:AnimatedNumber FontSize="48" FontWeight="SemiBold" Suffix="%" IsAvailable="{x:Bind ViewModel.GpuAvailable, Mode=OneWay}" Value="{x:Bind ViewModel.Gpu, Mode=OneWay}" />
+                        <controls:LineChart Height="96" Capacity="60" Maximum="100" ShowGrid="False" Stroke="White" Values="{x:Bind ViewModel.GpuHistory, Mode=OneWay}" />
+                        <TextBlock Style="{StaticResource OnColorSubtleStyle}">
+                            <Run Text="Temperature " />
+                            <Run Text="{x:Bind ViewModel.GpuTempText, Mode=OneWay}" FontWeight="SemiBold" Foreground="White" />
+                        </TextBlock>
+                    </StackPanel>
+                </Border>
+
+                <StackPanel controls:BentoGrid.Span="4" controls:BentoGrid.CompactSpan="12" Spacing="18">
+                    <Border Style="{StaticResource CyanCardStyle}" Padding="20" helpers:CardAction.NavigateTo="processes" AutomationProperties.Name="Memory card">
+                        <Grid ColumnSpacing="16">
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="Auto" />
+                                <ColumnDefinition Width="*" />
+                            </Grid.ColumnDefinitions>
+                            <StackPanel Spacing="6">
+                                <TextBlock Style="{StaticResource OnColorLabelStyle}" Text="MEMORY" />
+                                <controls:AnimatedNumber FontSize="34" FontWeight="SemiBold" Suffix="%" Value="{x:Bind ViewModel.Ram, Mode=OneWay}" />
+                                <TextBlock Text="{x:Bind ViewModel.RamDetail, Mode=OneWay}" Style="{StaticResource OnColorSubtleStyle}" />
+                            </StackPanel>
+                            <controls:LineChart Grid.Column="1" Height="70" Capacity="60" Maximum="100" ShowGrid="False" Stroke="White" Values="{x:Bind ViewModel.RamHistory, Mode=OneWay}" VerticalAlignment="Center" />
+                        </Grid>
+                    </Border>
+                    <Border Style="{StaticResource TealCardStyle}" Padding="20" helpers:CardAction.NavigateTo="network" AutomationProperties.Name="Network latency card">
+                        <Grid ColumnSpacing="16">
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="Auto" />
+                                <ColumnDefinition Width="*" />
+                            </Grid.ColumnDefinitions>
+                            <StackPanel Spacing="6">
+                                <TextBlock Style="{StaticResource OnColorLabelStyle}" Text="NETWORK LATENCY" />
+                                <StackPanel Orientation="Horizontal" Spacing="4">
+                                    <TextBlock Text="{x:Bind ViewModel.PingText, Mode=OneWay}" FontSize="34" FontWeight="SemiBold" TextLineBounds="Tight" />
+                                    <TextBlock Text="ms" Style="{StaticResource OnColorLabelStyle}" VerticalAlignment="Bottom" />
+                                </StackPanel>
+                                <TextBlock Text="{x:Bind ViewModel.NetworkDetail, Mode=OneWay}" Style="{StaticResource OnColorSubtleStyle}" MaxWidth="170" />
+                            </StackPanel>
+                            <controls:LineChart Grid.Column="1" Height="70" Capacity="60" ShowGrid="False" Stroke="White" Values="{x:Bind ViewModel.PingHistory, Mode=OneWay}" VerticalAlignment="Center" />
+                        </Grid>
+                    </Border>
+                </StackPanel>
+
+                <!-- ===== BOTTOM: history · sessions · recommendations · hardware ===== -->
+                <Border controls:BentoGrid.Span="8" Style="{StaticResource GlassCardStyle}" helpers:CardAction.NavigateTo="performance" AutomationProperties.Name="Performance history card">
+                    <Grid RowSpacing="14">
+                        <Grid.RowDefinitions>
+                            <RowDefinition Height="Auto" />
+                            <RowDefinition Height="*" />
+                        </Grid.RowDefinitions>
+                        <Grid>
+                            <StackPanel Spacing="2">
+                                <TextBlock Style="{StaticResource SectionTitleStyle}" Text="Performance history" />
+                                <TextBlock Style="{StaticResource BodySubtleStyle}" Text="Last 5 minutes · CPU, GPU and memory load" />
+                            </StackPanel>
+                            <StackPanel Orientation="Horizontal" Spacing="14" HorizontalAlignment="Right" VerticalAlignment="Top">
+                                <StackPanel Orientation="Horizontal" Spacing="6">
+                                    <Ellipse Width="8" Height="8" Fill="{StaticResource NexoraAccentBrush}" VerticalAlignment="Center" />
+                                    <TextBlock Text="CPU" FontSize="12" />
+                                </StackPanel>
+                                <StackPanel Orientation="Horizontal" Spacing="6">
+                                    <Ellipse Width="8" Height="8" Fill="{StaticResource NexoraGpuBrush}" VerticalAlignment="Center" />
+                                    <TextBlock Text="GPU" FontSize="12" />
+                                </StackPanel>
+                                <StackPanel Orientation="Horizontal" Spacing="6">
+                                    <Ellipse Width="8" Height="8" Fill="{StaticResource NexoraRamBrush}" VerticalAlignment="Center" />
+                                    <TextBlock Text="RAM" FontSize="12" />
+                                </StackPanel>
+                            </StackPanel>
+                        </Grid>
+                        <Grid Grid.Row="1" MinHeight="210">
+                            <controls:LineChart Capacity="300" Maximum="100" Unit="%" Stroke="{StaticResource NexoraRamBrush}" Values="{x:Bind ViewModel.RamLong, Mode=OneWay}" />
+                            <controls:LineChart Capacity="300" Maximum="100" ShowGrid="False" Stroke="{StaticResource NexoraGpuBrush}" Values="{x:Bind ViewModel.GpuLong, Mode=OneWay}" />
+                            <controls:LineChart Capacity="300" Maximum="100" ShowGrid="False" Stroke="{StaticResource NexoraAccentBrush}" Values="{x:Bind ViewModel.CpuLong, Mode=OneWay}" />
+                        </Grid>
+                    </Grid>
+                </Border>
+
+                <Border controls:BentoGrid.Span="4" Style="{StaticResource GlassCardStyle}" helpers:CardAction.NavigateTo="performance" AutomationProperties.Name="Recent gaming sessions card">
+                    <StackPanel Spacing="14">
+                        <StackPanel Orientation="Horizontal" Spacing="10">
+                            <Border Style="{StaticResource CardIconBadgeStyle}" Background="{StaticResource NexoraBlueGradient}">
+                                <FontIcon Glyph="&#xE7FC;" FontSize="16" Foreground="White" />
+                            </Border>
+                            <TextBlock Style="{StaticResource SectionTitleStyle}" Text="Recent gaming sessions" VerticalAlignment="Center" />
+                        </StackPanel>
+                        <TextBlock Style="{StaticResource BodySubtleStyle}" Text="No performance tests yet. Start one on the Performance page while you play." Visibility="{x:Bind ViewModel.HasNoRecentSessions, Mode=OneWay}" />
+                        <ItemsControl ItemsSource="{x:Bind ViewModel.RecentSessions}">
+                            <ItemsControl.ItemsPanel>
+                                <ItemsPanelTemplate>
+                                    <StackPanel Spacing="8" />
+                                </ItemsPanelTemplate>
+                            </ItemsControl.ItemsPanel>
+                            <ItemsControl.ItemTemplate>
+                                <DataTemplate x:DataType="vm:SessionHistoryItem">
+                                    <Border Style="{StaticResource InsetStyle}">
+                                        <Grid ColumnSpacing="12">
                                             <Grid.ColumnDefinitions>
                                                 <ColumnDefinition Width="*" />
                                                 <ColumnDefinition Width="Auto" />
                                             </Grid.ColumnDefinitions>
                                             <StackPanel>
-                                                <TextBlock Text="{x:Bind Name}" FontSize="12" FontWeight="SemiBold" />
-                                                <TextBlock Text="{x:Bind Detail}" FontSize="11" Foreground="{ThemeResource NexoraSubtleTextBrush}" TextTrimming="CharacterEllipsis" />
+                                                <TextBlock Text="{x:Bind Title}" FontWeight="SemiBold" FontSize="13" TextTrimming="CharacterEllipsis" />
+                                                <TextBlock Text="{x:Bind Date}" FontSize="11" Foreground="{ThemeResource NexoraSubtleTextBrush}" />
                                             </StackPanel>
-                                            <TextBlock Grid.Column="1" Text="{x:Bind ScoreText}" FontSize="16" FontWeight="SemiBold" VerticalAlignment="Center" />
+                                            <StackPanel Grid.Column="1" HorizontalAlignment="Right">
+                                                <TextBlock HorizontalAlignment="Right" FontSize="15" FontWeight="SemiBold">
+                                                    <Run Text="{x:Bind AvgFps}" />
+                                                    <Run Text="FPS" FontSize="10" Foreground="{ThemeResource NexoraSubtleTextBrush}" />
+                                                </TextBlock>
+                                                <TextBlock HorizontalAlignment="Right" FontSize="11" Foreground="{ThemeResource NexoraSubtleTextBrush}">
+                                                    <Run Text="1% low" />
+                                                    <Run Text="{x:Bind Low1}" />
+                                                </TextBlock>
+                                            </StackPanel>
                                         </Grid>
                                     </Border>
                                 </DataTemplate>
                             </ItemsControl.ItemTemplate>
                         </ItemsControl>
                     </StackPanel>
-                </Grid>
-            </Border>
+                </Border>
 
-            <!-- Metric cards -->
-            <Grid ColumnSpacing="16" RowSpacing="16">
-                <Grid.ColumnDefinitions>
-                    <ColumnDefinition Width="*" />
-                    <ColumnDefinition Width="*" />
-                    <ColumnDefinition Width="*" />
-                </Grid.ColumnDefinitions>
-                <Grid.RowDefinitions>
-                    <RowDefinition Height="Auto" />
-                    <RowDefinition Height="Auto" />
-                </Grid.RowDefinitions>
-
-                <controls:MetricCard
-                    Title="FPS Performance"
-                    Glyph="&#xE7FC;"
-                    Accent="{StaticResource NexoraFpsBrush}"
-                    ValueText="{x:Bind ViewModel.FpsText, Mode=OneWay}"
-                    Unit="FPS"
-                    Detail="{x:Bind ViewModel.FpsDetail, Mode=OneWay}"
-                    Tapped="OnFpsTapped" />
-                <controls:MetricCard
-                    Grid.Column="1"
-                    Title="Network Latency"
-                    Glyph="&#xE968;"
-                    ValueText="{x:Bind ViewModel.PingText, Mode=OneWay}"
-                    Unit="ms"
-                    Detail="{x:Bind ViewModel.NetworkDetail, Mode=OneWay}"
-                    Series="{x:Bind ViewModel.PingHistory, Mode=OneWay}"
-                    Tapped="OnNetworkTapped" />
-                <controls:MetricCard
-                    Grid.Column="2"
-                    Title="System Health"
-                    Glyph="&#xE95E;"
-                    Accent="{StaticResource NexoraSecondaryAccentBrush}"
-                    ValueText="{x:Bind ViewModel.HealthText, Mode=OneWay}"
-                    Detail="{x:Bind ViewModel.HealthDetail, Mode=OneWay}"
-                    Tapped="OnHealthTapped" />
-
-                <controls:MetricCard
-                    Grid.Row="1"
-                    Title="CPU Usage"
-                    Glyph="&#xE950;"
-                    UseNumeric="True"
-                    NumericValue="{x:Bind ViewModel.Cpu, Mode=OneWay}"
-                    Suffix="%"
-                    Detail="{x:Bind ViewModel.CpuDetail, Mode=OneWay}"
-                    Series="{x:Bind ViewModel.CpuHistory, Mode=OneWay}"
-                    SeriesMaximum="100" />
-                <controls:MetricCard
-                    Grid.Row="1"
-                    Grid.Column="1"
-                    Title="GPU Usage"
-                    Glyph="&#xE7F4;"
-                    Accent="{StaticResource NexoraGpuBrush}"
-                    UseNumeric="True"
-                    IsAvailable="{x:Bind ViewModel.GpuAvailable, Mode=OneWay}"
-                    NumericValue="{x:Bind ViewModel.Gpu, Mode=OneWay}"
-                    Suffix="%"
-                    Detail="{x:Bind ViewModel.GpuDetail, Mode=OneWay}"
-                    Series="{x:Bind ViewModel.GpuHistory, Mode=OneWay}"
-                    SeriesMaximum="100" />
-                <controls:MetricCard
-                    Grid.Row="1"
-                    Grid.Column="2"
-                    Title="RAM Usage"
-                    Glyph="&#xEEA0;"
-                    Accent="{StaticResource NexoraRamBrush}"
-                    UseNumeric="True"
-                    NumericValue="{x:Bind ViewModel.Ram, Mode=OneWay}"
-                    Suffix="%"
-                    Detail="{x:Bind ViewModel.RamDetail, Mode=OneWay}"
-                    Series="{x:Bind ViewModel.RamHistory, Mode=OneWay}"
-                    SeriesMaximum="100" />
-            </Grid>
-
-            <Border Style="{StaticResource CardStyle}" Padding="20,14">
-                <Grid ColumnSpacing="24">
-                    <Grid.ColumnDefinitions>
-                        <ColumnDefinition Width="Auto" />
-                        <ColumnDefinition Width="Auto" />
-                        <ColumnDefinition Width="*" />
-                    </Grid.ColumnDefinitions>
-                    <StackPanel Orientation="Horizontal" Spacing="8">
-                        <FontIcon Glyph="&#xE9CA;" Style="{StaticResource IconStyle}" Foreground="{ThemeResource NexoraSubtleTextBrush}" />
-                        <TextBlock VerticalAlignment="Center" FontSize="13">
-                            <Run Text="CPU temperature " Foreground="{ThemeResource NexoraSubtleTextBrush}" />
-                            <Run Text="{x:Bind ViewModel.CpuTempText, Mode=OneWay}" FontWeight="SemiBold" />
-                        </TextBlock>
+                <Border controls:BentoGrid.Span="6" Style="{StaticResource GlassCardStyle}" helpers:CardAction.NavigateTo="optimizer" AutomationProperties.Name="Recommendations card">
+                    <StackPanel Spacing="14">
+                        <StackPanel Orientation="Horizontal" Spacing="10">
+                            <Border Style="{StaticResource CardIconBadgeStyle}" Background="{StaticResource NexoraOrangeGradient}">
+                                <FontIcon Glyph="&#xE945;" FontSize="16" Foreground="White" />
+                            </Border>
+                            <StackPanel VerticalAlignment="Center">
+                                <TextBlock Style="{StaticResource SectionTitleStyle}" Text="Optimization recommendations" />
+                                <TextBlock Style="{StaticResource BodySubtleStyle}" Text="{x:Bind ViewModel.RecommendationSummary, Mode=OneWay}" />
+                            </StackPanel>
+                        </StackPanel>
+                        <ItemsControl ItemsSource="{x:Bind ViewModel.Recommendations}">
+                            <ItemsControl.ItemsPanel>
+                                <ItemsPanelTemplate>
+                                    <StackPanel Spacing="8" />
+                                </ItemsPanelTemplate>
+                            </ItemsControl.ItemsPanel>
+                            <ItemsControl.ItemTemplate>
+                                <DataTemplate x:DataType="vm:RecommendationRow">
+                                    <Border Style="{StaticResource InsetStyle}">
+                                        <Grid ColumnSpacing="12">
+                                            <Grid.ColumnDefinitions>
+                                                <ColumnDefinition Width="*" />
+                                                <ColumnDefinition Width="Auto" />
+                                            </Grid.ColumnDefinitions>
+                                            <StackPanel>
+                                                <TextBlock Text="{x:Bind Name}" FontWeight="SemiBold" FontSize="13" />
+                                                <TextBlock Text="{x:Bind Reason}" FontSize="11" Foreground="{ThemeResource NexoraSubtleTextBrush}" TextWrapping="WrapWholeWords" />
+                                            </StackPanel>
+                                            <Border Grid.Column="1" Style="{StaticResource ChipStyle}" VerticalAlignment="Top">
+                                                <TextBlock Text="{x:Bind Impact}" FontSize="11" />
+                                            </Border>
+                                        </Grid>
+                                    </Border>
+                                </DataTemplate>
+                            </ItemsControl.ItemTemplate>
+                        </ItemsControl>
+                        <Button Style="{StaticResource SecondaryButtonStyle}" Content="Open optimizer" Command="{x:Bind ViewModel.OpenOptimizerCommand}" />
                     </StackPanel>
-                    <TextBlock Grid.Column="1" VerticalAlignment="Center" FontSize="13">
-                        <Run Text="GPU temperature " Foreground="{ThemeResource NexoraSubtleTextBrush}" />
-                        <Run Text="{x:Bind ViewModel.GpuTempText, Mode=OneWay}" FontWeight="SemiBold" />
-                    </TextBlock>
-                    <HyperlinkButton Grid.Column="2" HorizontalAlignment="Right" Content="Open optimizer" Command="{x:Bind ViewModel.OpenOptimizerCommand}" />
-                </Grid>
-            </Border>
+                </Border>
+
+                <Border controls:BentoGrid.Span="6" Style="{StaticResource GlassCardStyle}" helpers:CardAction.NavigateTo="about" AutomationProperties.Name="Hardware overview card">
+                    <StackPanel Spacing="14">
+                        <StackPanel Orientation="Horizontal" Spacing="10">
+                            <Border Style="{StaticResource CardIconBadgeStyle}" Background="{StaticResource NexoraCyanGradient}">
+                                <FontIcon Glyph="&#xE7F8;" FontSize="16" Foreground="White" />
+                            </Border>
+                            <TextBlock Style="{StaticResource SectionTitleStyle}" Text="Hardware overview" VerticalAlignment="Center" />
+                        </StackPanel>
+                        <ItemsControl ItemsSource="{x:Bind ViewModel.HardwareRows}">
+                            <ItemsControl.ItemsPanel>
+                                <ItemsPanelTemplate>
+                                    <VariableSizedWrapGrid Orientation="Horizontal" ItemWidth="250" ItemHeight="64" />
+                                </ItemsPanelTemplate>
+                            </ItemsControl.ItemsPanel>
+                            <ItemsControl.ItemTemplate>
+                                <DataTemplate x:DataType="vm:InfoRow">
+                                    <Border Style="{StaticResource InsetStyle}" Margin="0,0,8,8">
+                                        <StackPanel>
+                                            <TextBlock Text="{x:Bind Label}" Style="{StaticResource CardLabelStyle}" />
+                                            <TextBlock Text="{x:Bind Value}" FontSize="13" FontWeight="SemiBold" TextTrimming="CharacterEllipsis" />
+                                        </StackPanel>
+                                    </Border>
+                                </DataTemplate>
+                            </ItemsControl.ItemTemplate>
+                        </ItemsControl>
+                    </StackPanel>
+                </Border>
+            </controls:BentoGrid>
         </StackPanel>
     </ScrollViewer>
 </Page>

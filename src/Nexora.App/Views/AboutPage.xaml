@@ -8,7 +8,7 @@
 
     <ScrollViewer VerticalScrollBarVisibility="Auto">
         <StackPanel helpers:Entrance.Stagger="True" Padding="32,20,32,32" Spacing="16" MaxWidth="980" HorizontalAlignment="Left">
-            <Border Style="{StaticResource HeroCardStyle}">
+            <Border Style="{StaticResource PurpleCardStyle}">
                 <StackPanel Orientation="Horizontal" Spacing="24">
                     <controls:NexoraLogo Width="84" Height="84" />
                     <StackPanel VerticalAlignment="Center" Spacing="4">
@@ -22,7 +22,7 @@
                 </StackPanel>
             </Border>
 
-            <Border Style="{StaticResource CardStyle}">
+            <Border Style="{StaticResource GlassCardStyle}">
                 <StackPanel Spacing="12">
                     <TextBlock Style="{StaticResource SectionTitleStyle}" Text="System" />
                     <controls:StatTile Label="Platform" Value="{x:Bind ViewModel.Platform}" />
@@ -32,7 +32,7 @@
                 </StackPanel>
             </Border>
 
-            <Border Style="{StaticResource CardStyle}">
+            <Border Style="{StaticResource GlassCardStyle}">
                 <StackPanel Spacing="10">
                     <TextBlock Style="{StaticResource SectionTitleStyle}" Text="Privacy" />
                     <TextBlock Style="{StaticResource BodyStyle}" Text="NEXORA works completely offline. It collects no personal information, sends no telemetry and never downloads or runs external files. The only network traffic it creates is the latency probes you can see on the Network page." />
@@ -40,7 +40,7 @@
                 </StackPanel>
             </Border>
 
-            <Border Style="{StaticResource CardStyle}">
+            <Border Style="{StaticResource GlassCardStyle}">
                 <StackPanel Spacing="10">
                     <TextBlock Style="{StaticResource SectionTitleStyle}" Text="Our promise" />
                     <TextBlock Style="{StaticResource BodyStyle}" Text="• Every optimization is explained, backed up before it is applied and can be undone." />

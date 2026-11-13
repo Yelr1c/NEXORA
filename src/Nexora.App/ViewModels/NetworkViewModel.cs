@@ -85,6 +85,19 @@ public sealed class NetworkViewModel : ObservableObject, INavigationAware
     private IReadOnlyList<double> _latencyHistory = [];
     private string _lastTested = "Run a test to measure your connection.";
     private string _liveText = Format.Dash;
+    private string? _adapterInterfaceName;
+    private Microsoft.UI.Dispatching.DispatcherQueueTimer? _throughputTimer;
+    private (long Rx, long Tx, DateTimeOffset At)? _lastBytes;
+    private readonly List<double> _downHistory = [];
+    private readonly List<double> _upHistory = [];
+    private string _downloadText = Format.Dash;
+    private string _uploadText = Format.Dash;
+    private IReadOnlyList<double> _downloadSeries = [];
+    private IReadOnlyList<double> _uploadSeries = [];
+    private double _jitterBar;
+    private double _lossBar;
+    private double _qualityScore;
+    private string _qualityDetail = "Run a network test for a full analysis.";
     private readonly DnsBenchmark _dnsBenchmark;
     private bool _isDnsRunning;
     private double _dnsProgress;
@@ -112,6 +125,105 @@ public sealed class NetworkViewModel : ObservableObject, INavigationAware
     public AsyncRelayCommand RefreshAdapterCommand { get; }
 
     public AsyncRelayCommand RunDnsBenchmarkCommand { get; }
+
+    public string DownloadText { get => _downloadText; private set => SetProperty(ref _downloadText, value); }
+
+    public string UploadText { get => _uploadText; private set => SetProperty(ref _uploadText, value); }
+
+    public IReadOnlyList<double> DownloadSeries { get => _downloadSeries; private set => SetProperty(ref _downloadSeries, value); }
+
+    public IReadOnlyList<double> UploadSeries { get => _uploadSeries; private set => SetProperty(ref _uploadSeries, value); }
+
+    /// <summary>Jitter on a 0–100 bar where 30 ms or more fills it.</summary>
+    public double JitterBar { get => _jitterBar; private set => SetProperty(ref _jitterBar, value); }
+
+    /// <summary>Packet loss on a 0–100 bar where 5% or more fills it.</summary>
+    public double LossBar { get => _lossBar; private set => SetProperty(ref _lossBar, value); }
+
+    /// <summary>Latency stability score (0–100) shown in the quality ring.</summary>
+    public double QualityScore { get => _qualityScore; private set => SetProperty(ref _qualityScore, value); }
+
+    public string QualityDetail { get => _qualityDetail; private set => SetProperty(ref _qualityDetail, value); }
+
+    /// <summary>Live adapter traffic (bytes actually sent/received by this PC), sampled once per second while the page is open.</summary>
+    private void SampleThroughput()
+    {
+        try
+        {
+            var nic = System.Net.NetworkInformation.NetworkInterface.GetAllNetworkInterfaces().FirstOrDefault(n => n.Name == _adapterInterfaceName);
+            if (nic is null)
+            {
+                DownloadText = UploadText = Format.Dash;
+                return;
+            }
+
+            var stats = nic.GetIPStatistics();
+            var now = DateTimeOffset.UtcNow;
+            if (_lastBytes is { } last && now > last.At)
+            {
+                var seconds = (now - last.At).TotalSeconds;
+                var down = Math.Max(0, stats.BytesReceived - last.Rx) * 8 / seconds / 1_000_000;
+                var up = Math.Max(0, stats.BytesSent - last.Tx) * 8 / seconds / 1_000_000;
+                Push(_downHistory, down);
+                Push(_upHistory, up);
+                DownloadText = FormatRate(down);
+                UploadText = FormatRate(up);
+                DownloadSeries = _downHistory.ToList();
+                UploadSeries = _upHistory.ToList();
+            }
+
+            _lastBytes = (stats.BytesReceived, stats.BytesSent, now);
+        }
+        catch (System.Net.NetworkInformation.NetworkInformationException)
+        {
+            DownloadText = UploadText = Format.Dash;
+        }
+
+        static void Push(List<double> list, double value)
+        {
+            list.Add(value);
+            if (list.Count > 60)
+            {
+                list.RemoveAt(0);
+            }
+        }
+    }
+
+    private static string FormatRate(double mbps) => mbps switch
+    {
+        >= 100 => $"{mbps:0}",
+        >= 1 => $"{mbps:0.0}",
+        _ => $"{mbps:0.00}",
+    };
+
+    private void ShowLiveQuality(LatencyStatisticsResult stats)
+    {
+        if (stats.Sent == 0)
+        {
+            return;
+        }
+
+        if (!IsTesting)
+        {
+            Ping = stats.AverageMs is { } avg ? avg.ToString("0", CultureInfo.CurrentCulture) : "—";
+            Jitter = stats.JitterMs is { } j ? j.ToString("0.#", CultureInfo.CurrentCulture) : "—";
+            Loss = stats.PacketLossPercent.ToString("0.#", CultureInfo.CurrentCulture);
+            var quality = LatencyStatistics.Classify(stats);
+            Quality = quality.ToString();
+            QualityLevel = quality switch
+            {
+                ConnectionQuality.Excellent or ConnectionQuality.Good => StatusLevel.Good,
+                ConnectionQuality.Fair => StatusLevel.Warning,
+                ConnectionQuality.Poor => StatusLevel.Problem,
+                _ => StatusLevel.Neutral,
+            };
+        }
+
+        JitterBar = Math.Clamp((stats.JitterMs ?? 0) / 30 * 100, 2, 100);
+        LossBar = Math.Clamp(stats.PacketLossPercent / 5 * 100, 2, 100);
+        QualityScore = stats.StabilityScore;
+        QualityDetail = $"Stability {stats.StabilityScore:0}/100 over the last {stats.Sent} probes";
+    }
 
     public ObservableCollection<DnsResultViewModel> DnsResults { get; } = [];
 
@@ -231,6 +343,9 @@ public sealed class NetworkViewModel : ObservableObject, INavigationAware
     {
         _monitor.SampleAvailable += OnLiveSample;
         UpdateLive();
+        _throughputTimer ??= _dispatcher.CreateTimer(TimeSpan.FromSeconds(1), SampleThroughput);
+        _lastBytes = null;
+        _throughputTimer.Start();
         RefreshAdapterAsync().Forget("read network adapter");
         if (parameter is "run" && !IsTesting)
         {
@@ -238,13 +353,18 @@ public sealed class NetworkViewModel : ObservableObject, INavigationAware
         }
     }
 
-    public void OnNavigatedFrom() => _monitor.SampleAvailable -= OnLiveSample;
+    public void OnNavigatedFrom()
+    {
+        _monitor.SampleAvailable -= OnLiveSample;
+        _throughputTimer?.Stop();
+    }
 
     private void OnLiveSample(object? sender, LatencySample sample) => _dispatcher.Post(UpdateLive);
 
     private void UpdateLive()
     {
         var stats = _monitor.GetRecentStatistics(10);
+        ShowLiveQuality(_monitor.GetRecentStatistics(20));
         LiveText = stats.Sent == 0
             ? (_monitor.IsRunning ? "Live monitor starting…" : "Live monitoring is off (Settings › Network monitoring)")
             : $"Live: {Format.Ms(stats.AverageMs)} · jitter {Format.Ms(stats.JitterMs)} · loss {stats.PacketLossPercent:0.#}% (last {stats.Sent} probes)";
@@ -281,6 +401,7 @@ public sealed class NetworkViewModel : ObservableObject, INavigationAware
         }
 
         AdapterName = adapter.Description;
+        _adapterInterfaceName = adapter.Name;
         ConnectionType = adapter.KindDescription;
         LinkSpeed = adapter.Kind == AdapterKind.WiFi && adapter.WifiLinkSpeedMbps is { } rate ? $"{rate:0} Mbps (Wi-Fi link)" : Format.LinkSpeed(adapter.SpeedBitsPerSecond);
         LinkStatus = adapter.IsUp ? "Connected" : "Disconnected";
@@ -355,6 +476,10 @@ public sealed class NetworkViewModel : ObservableObject, INavigationAware
         GatewayLatency = result.Gateway is { } g ? $"{Format.Ms(g.AverageMs)} · {g.PacketLossPercent:0.#}% loss" : "No gateway";
         DnsLatency = result.Dns is { } d ? (d.AverageMs is { } dnsAvg ? $"{Format.Ms(dnsAvg)} ({result.DnsServer})" : "No response") : "No DNS server";
         Stability = $"{s.StabilityScore:0} / 100";
+        JitterBar = Math.Clamp((s.JitterMs ?? 0) / 30 * 100, 2, 100);
+        LossBar = Math.Clamp(s.PacketLossPercent / 5 * 100, 2, 100);
+        QualityScore = s.StabilityScore;
+        QualityDetail = $"Stability {s.StabilityScore:0}/100 from the last network test";
         MinMax = s.MinimumMs is { } min ? $"min {Format.Ms(min)} · median {Format.Ms(s.MedianMs)} · max {Format.Ms(s.MaximumMs)}" : string.Empty;
         LastTested = $"Tested {result.StartedAt.ToLocalTime():t} · {s.Sent} probes";
         ProgressText = "Test complete";

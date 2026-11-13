@@ -97,6 +97,19 @@ public sealed class ProcessesViewModel : ObservableObject, INavigationAware
 
     public bool HasMessage => Message.Length > 0;
 
+    private string _processCount = "—";
+    private string _memoryTotal = "—";
+    private string _topCpu = "—";
+    private string _protectedCount = "—";
+
+    public string ProcessCount { get => _processCount; private set => SetProperty(ref _processCount, value); }
+
+    public string MemoryTotal { get => _memoryTotal; private set => SetProperty(ref _memoryTotal, value); }
+
+    public string TopCpu { get => _topCpu; private set => SetProperty(ref _topCpu, value); }
+
+    public string ProtectedCount { get => _protectedCount; private set => SetProperty(ref _protectedCount, value); }
+
     public string Search
     {
         get => _search;
@@ -243,5 +256,10 @@ public sealed class ProcessesViewModel : ObservableObject, INavigationAware
 
         var totalMemory = _latest.Sum(p => p.MemoryBytes);
         Summary = $"{_latest.Count} processes · {Format.Bytes(totalMemory)} working set · {_latest.Count(p => p.IsProtected)} protected";
+        ProcessCount = _latest.Count.ToString(System.Globalization.CultureInfo.CurrentCulture);
+        MemoryTotal = Format.Bytes(totalMemory);
+        ProtectedCount = _latest.Count(p => p.IsProtected).ToString(System.Globalization.CultureInfo.CurrentCulture);
+        var top = _latest.Where(p => p.CpuPercent.HasValue && p.Id != Environment.ProcessId).OrderByDescending(p => p.CpuPercent).FirstOrDefault();
+        TopCpu = top is null ? "—" : $"{top.Name} · {top.CpuPercent:0.#}%";
     }
 }

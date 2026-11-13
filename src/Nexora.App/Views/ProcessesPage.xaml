@@ -2,6 +2,8 @@
     x:Class="Nexora.App.Views.ProcessesPage"
     xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:helpers="using:Nexora.App.Helpers"
+    xmlns:controls="using:Nexora.App.Controls"
     xmlns:vm="using:Nexora.App.ViewModels"
     Background="Transparent">
 
@@ -13,9 +15,77 @@
             <RowDefinition Height="*" />
         </Grid.RowDefinitions>
 
-        <StackPanel Spacing="2">
-            <TextBlock Style="{StaticResource PageTitleStyle}" Text="Processes" />
-            <TextBlock Style="{StaticResource PageSubtitleStyle}" Text="{x:Bind ViewModel.Summary, Mode=OneWay}" />
+        <StackPanel Spacing="16">
+            <StackPanel Spacing="2">
+                <TextBlock Style="{StaticResource PageTitleStyle}" Text="Processes" />
+                <TextBlock Style="{StaticResource PageSubtitleStyle}" Text="Everything running on your PC, live. Critical Windows processes and security software are protected." />
+            </StackPanel>
+            <controls:BentoGrid helpers:Entrance.Stagger="True" ColumnSpacing="14" RowSpacing="14">
+                <Border controls:BentoGrid.Span="3" controls:BentoGrid.CompactSpan="6" Style="{StaticResource BlueCardStyle}" Padding="18">
+                    <Grid ColumnSpacing="12">
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="*" />
+                            <ColumnDefinition Width="Auto" />
+                        </Grid.ColumnDefinitions>
+                        <StackPanel Spacing="6">
+                            <TextBlock Style="{StaticResource OnColorLabelStyle}" Text="PROCESSES" />
+                            <TextBlock Text="{x:Bind ViewModel.ProcessCount, Mode=OneWay}" FontSize="26" FontWeight="SemiBold" TextTrimming="CharacterEllipsis" />
+                            <TextBlock Text="running right now" Style="{StaticResource OnColorSubtleStyle}" />
+                        </StackPanel>
+                        <Border Grid.Column="1" Style="{StaticResource CardIconBadgeStyle}" VerticalAlignment="Top">
+                            <FontIcon Glyph="&#xE9D9;" FontSize="16" />
+                        </Border>
+                    </Grid>
+                </Border>
+                    <Border controls:BentoGrid.Span="3" controls:BentoGrid.CompactSpan="6" Style="{StaticResource CyanCardStyle}" Padding="18">
+                        <Grid ColumnSpacing="12">
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="*" />
+                                <ColumnDefinition Width="Auto" />
+                            </Grid.ColumnDefinitions>
+                            <StackPanel Spacing="6">
+                                <TextBlock Style="{StaticResource OnColorLabelStyle}" Text="MEMORY IN USE" />
+                                <TextBlock Text="{x:Bind ViewModel.MemoryTotal, Mode=OneWay}" FontSize="26" FontWeight="SemiBold" TextTrimming="CharacterEllipsis" />
+                                <TextBlock Text="working set of all processes" Style="{StaticResource OnColorSubtleStyle}" />
+                            </StackPanel>
+                            <Border Grid.Column="1" Style="{StaticResource CardIconBadgeStyle}" VerticalAlignment="Top">
+                                <FontIcon Glyph="&#xEEA0;" FontSize="16" />
+                            </Border>
+                        </Grid>
+                    </Border>
+                    <Border controls:BentoGrid.Span="3" controls:BentoGrid.CompactSpan="6" Style="{StaticResource PurpleCardStyle}" Padding="18">
+                        <Grid ColumnSpacing="12">
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="*" />
+                                <ColumnDefinition Width="Auto" />
+                            </Grid.ColumnDefinitions>
+                            <StackPanel Spacing="6">
+                                <TextBlock Style="{StaticResource OnColorLabelStyle}" Text="TOP CPU" />
+                                <TextBlock Text="{x:Bind ViewModel.TopCpu, Mode=OneWay}" FontSize="26" FontWeight="SemiBold" TextTrimming="CharacterEllipsis" />
+                                <TextBlock Text="busiest process" Style="{StaticResource OnColorSubtleStyle}" />
+                            </StackPanel>
+                            <Border Grid.Column="1" Style="{StaticResource CardIconBadgeStyle}" VerticalAlignment="Top">
+                                <FontIcon Glyph="&#xE950;" FontSize="16" />
+                            </Border>
+                        </Grid>
+                    </Border>
+                    <Border controls:BentoGrid.Span="3" controls:BentoGrid.CompactSpan="6" Style="{StaticResource TealCardStyle}" Padding="18">
+                        <Grid ColumnSpacing="12">
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="*" />
+                                <ColumnDefinition Width="Auto" />
+                            </Grid.ColumnDefinitions>
+                            <StackPanel Spacing="6">
+                                <TextBlock Style="{StaticResource OnColorLabelStyle}" Text="PROTECTED" />
+                                <TextBlock Text="{x:Bind ViewModel.ProtectedCount, Mode=OneWay}" FontSize="26" FontWeight="SemiBold" TextTrimming="CharacterEllipsis" />
+                                <TextBlock Text="cannot be ended by NEXORA" Style="{StaticResource OnColorSubtleStyle}" />
+                            </StackPanel>
+                            <Border Grid.Column="1" Style="{StaticResource CardIconBadgeStyle}" VerticalAlignment="Top">
+                                <FontIcon Glyph="&#xE72E;" FontSize="16" />
+                            </Border>
+                        </Grid>
+                    </Border>
+            </controls:BentoGrid>
         </StackPanel>
 
         <Grid Grid.Row="1" ColumnSpacing="12">

@@ -196,6 +196,19 @@ public sealed class OptimizerViewModel : ObservableObject, INavigationAware
 
     public bool HasHistory => HistoryItems.Count > 0;
 
+    private string _activeCount = "—";
+    private string _availableCount = "—";
+    private string _startupCount = "—";
+    private string _undoableCount = "—";
+
+    public string ActiveCount { get => _activeCount; private set => SetProperty(ref _activeCount, value); }
+
+    public string AvailableCount { get => _availableCount; private set => SetProperty(ref _availableCount, value); }
+
+    public string StartupCount { get => _startupCount; private set => SetProperty(ref _startupCount, value); }
+
+    public string UndoableCount { get => _undoableCount; private set => SetProperty(ref _undoableCount, value); }
+
     public bool HasNoHistory => HistoryItems.Count == 0;
 
     /// <summary>0 = Optimizations, 1 = Startup apps, 2 = History.</summary>
@@ -267,6 +280,8 @@ public sealed class OptimizerViewModel : ObservableObject, INavigationAware
             var optimized = _all.Count(i => i.IsApplied);
             var available = _all.Count(i => i.CanApply);
             Summary = $"{optimized} of {_all.Count(i => i.IsAvailable)} available optimizations active · {available} can be applied";
+            ActiveCount = $"{optimized} / {_all.Count(i => i.IsAvailable)}";
+            AvailableCount = available.ToString(System.Globalization.CultureInfo.CurrentCulture);
 
             var startup = await Task.Run(_catalog.GetStartupOptimizations);
             StartupItems.Clear();
@@ -276,6 +291,8 @@ public sealed class OptimizerViewModel : ObservableObject, INavigationAware
             }
 
             await LoadHistoryAsync();
+            StartupCount = $"{StartupItems.Count(i => i.IsEnabled)} / {StartupItems.Count}";
+            UndoableCount = HistoryItems.Count(h => h.CanUndo).ToString(System.Globalization.CultureInfo.CurrentCulture);
         }
         finally
         {

@@ -24,6 +24,19 @@ function Shot([string] $name) {
     $bmp.Save((Join-Path $OutDir "$name.png")); $bmp.Dispose()
 }
 
+Add-Type -Namespace Native -Name Mouse -MemberDefinition @"
+[DllImport("user32.dll")] public static extern bool SetCursorPos(int x, int y);
+[DllImport("user32.dll")] public static extern void mouse_event(uint flags, uint dx, uint dy, uint data, System.UIntPtr extra);
+"@
+function MouseClick([object] $el) {
+    $r = $el.Current.BoundingRectangle
+    [void][Native.Mouse]::SetCursorPos([int]($r.X + 40), [int]($r.Y + 40))
+    Start-Sleep -Milliseconds 200
+    [Native.Mouse]::mouse_event(0x0002, 0, 0, 0, [System.UIntPtr]::Zero)
+    Start-Sleep -Milliseconds 80
+    [Native.Mouse]::mouse_event(0x0004, 0, 0, 0, [System.UIntPtr]::Zero)
+}
+
 Add-Type -Namespace Native -Name Spi -MemberDefinition @"
 [DllImport("user32.dll")] public static extern bool SystemParametersInfo(uint a, uint p, int[] v, uint w);
 [DllImport("user32.dll")] public static extern bool SystemParametersInfo(uint a, uint p, ref int v, uint w);
@@ -144,6 +157,17 @@ try {
     # --- Every page ------------------------------------------------------------------------
     foreach ($page in 'Dashboard', 'Performance', 'Network', 'Optimizer', 'Games', 'Processes', 'Settings', 'About') {
         Step $app "Open $page" $page 5
+    }
+
+    # --- Dashboard cards navigate on click --------------------------------------------------
+    Step $app 'Dashboard (cards)' 'Dashboard' 4
+    $card = Find $app.Window 'Network latency card'
+    if (-not $card) { $script:failures += 'Dashboard network card not found' }
+    else {
+        MouseClick $card
+        Start-Sleep -Seconds 3
+        Shot 'card-click-network'
+        if (Find $app.Window 'RUN NETWORK TEST') { Write-Host '   card click opened the Network page' } else { $script:failures += 'Clicking the network card did not open the Network page' }
     }
 
     # --- Main read-only actions ------------------------------------------------------------

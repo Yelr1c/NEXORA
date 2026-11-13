@@ -74,13 +74,109 @@
         <Setter Property="Background" Value="{ThemeResource NexoraCardBrush}" />
         <Setter Property="BorderBrush" Value="{ThemeResource NexoraCardBorderBrush}" />
         <Setter Property="BorderThickness" Value="1" />
-        <Setter Property="CornerRadius" Value="12" />
+        <Setter Property="CornerRadius" Value="16" />
         <Setter Property="Padding" Value="20" />
     </Style>
 
     <Style x:Key="HeroCardStyle" TargetType="Border" BasedOn="{StaticResource CardStyle}">
         <Setter Property="Background" Value="{ThemeResource NexoraHeroBrush}" />
         <Setter Property="Padding" Value="28" />
+    </Style>
+
+    <!-- ===== Card identities (gradients) =====================================================
+         Each section has its own colour. Gradient cards always render their content in the dark theme
+         (white text), so they look the same in light and dark mode. -->
+    <LinearGradientBrush x:Key="NexoraBlueGradient" StartPoint="0,0" EndPoint="1,1">
+        <GradientStop Offset="0" Color="#FF1D4ED8" />
+        <GradientStop Offset="1" Color="#FF0B1A4A" />
+    </LinearGradientBrush>
+    <LinearGradientBrush x:Key="NexoraCyanGradient" StartPoint="0,0" EndPoint="1,1">
+        <GradientStop Offset="0" Color="#FF0891B2" />
+        <GradientStop Offset="1" Color="#FF0B2547" />
+    </LinearGradientBrush>
+    <LinearGradientBrush x:Key="NexoraPurpleGradient" StartPoint="0,0" EndPoint="1,1">
+        <GradientStop Offset="0" Color="#FF7C3AED" />
+        <GradientStop Offset="1" Color="#FF1E1B4B" />
+    </LinearGradientBrush>
+    <LinearGradientBrush x:Key="NexoraTealGradient" StartPoint="0,0" EndPoint="1,1">
+        <GradientStop Offset="0" Color="#FF0D9488" />
+        <GradientStop Offset="1" Color="#FF0B2E26" />
+    </LinearGradientBrush>
+    <LinearGradientBrush x:Key="NexoraOrangeGradient" StartPoint="0,0" EndPoint="1,1">
+        <GradientStop Offset="0" Color="#FFEA580C" />
+        <GradientStop Offset="1" Color="#FF431407" />
+    </LinearGradientBrush>
+    <LinearGradientBrush x:Key="NexoraIndigoGradient" StartPoint="0,0" EndPoint="1,1">
+        <GradientStop Offset="0" Color="#FF4F46E5" />
+        <GradientStop Offset="1" Color="#FF0F172A" />
+    </LinearGradientBrush>
+    <LinearGradientBrush x:Key="NexoraCardLightBorder" StartPoint="0,0" EndPoint="0,1">
+        <GradientStop Offset="0" Color="#55FFFFFF" />
+        <GradientStop Offset="0.35" Color="#14FFFFFF" />
+        <GradientStop Offset="1" Color="#08FFFFFF" />
+    </LinearGradientBrush>
+    <SolidColorBrush x:Key="NexoraOnColorSubtleBrush" Color="#B8E2E8F0" />
+
+    <Style x:Key="ColorCardStyle" TargetType="Border">
+        <Setter Property="BorderBrush" Value="{StaticResource NexoraCardLightBorder}" />
+        <Setter Property="BorderThickness" Value="1" />
+        <Setter Property="CornerRadius" Value="16" />
+        <Setter Property="Padding" Value="22" />
+        <Setter Property="RequestedTheme" Value="Dark" />
+    </Style>
+    <Style x:Key="BlueCardStyle" TargetType="Border" BasedOn="{StaticResource ColorCardStyle}">
+        <Setter Property="Background" Value="{StaticResource NexoraBlueGradient}" />
+    </Style>
+    <Style x:Key="CyanCardStyle" TargetType="Border" BasedOn="{StaticResource ColorCardStyle}">
+        <Setter Property="Background" Value="{StaticResource NexoraCyanGradient}" />
+    </Style>
+    <Style x:Key="PurpleCardStyle" TargetType="Border" BasedOn="{StaticResource ColorCardStyle}">
+        <Setter Property="Background" Value="{StaticResource NexoraPurpleGradient}" />
+    </Style>
+    <Style x:Key="TealCardStyle" TargetType="Border" BasedOn="{StaticResource ColorCardStyle}">
+        <Setter Property="Background" Value="{StaticResource NexoraTealGradient}" />
+    </Style>
+    <Style x:Key="OrangeCardStyle" TargetType="Border" BasedOn="{StaticResource ColorCardStyle}">
+        <Setter Property="Background" Value="{StaticResource NexoraOrangeGradient}" />
+    </Style>
+    <Style x:Key="IndigoCardStyle" TargetType="Border" BasedOn="{StaticResource ColorCardStyle}">
+        <Setter Property="Background" Value="{StaticResource NexoraIndigoGradient}" />
+    </Style>
+    <!-- Neutral analytics card (dark glass) used for charts and lists between the colourful cards. -->
+    <Style x:Key="GlassCardStyle" TargetType="Border">
+        <Setter Property="Background" Value="{ThemeResource NexoraCardStrongBrush}" />
+        <Setter Property="BorderBrush" Value="{ThemeResource NexoraCardBorderBrush}" />
+        <Setter Property="BorderThickness" Value="1" />
+        <Setter Property="CornerRadius" Value="16" />
+        <Setter Property="Padding" Value="22" />
+    </Style>
+
+    <Style x:Key="CardIconBadgeStyle" TargetType="Border">
+        <Setter Property="Width" Value="34" />
+        <Setter Property="Height" Value="34" />
+        <Setter Property="CornerRadius" Value="10" />
+        <Setter Property="Background" Value="#26FFFFFF" />
+    </Style>
+    <Style x:Key="HugeValueStyle" TargetType="TextBlock">
+        <Setter Property="FontSize" Value="46" />
+        <Setter Property="FontWeight" Value="SemiBold" />
+        <Setter Property="TextLineBounds" Value="Tight" />
+    </Style>
+    <Style x:Key="BigValueStyle" TargetType="TextBlock">
+        <Setter Property="FontSize" Value="32" />
+        <Setter Property="FontWeight" Value="SemiBold" />
+        <Setter Property="TextLineBounds" Value="Tight" />
+    </Style>
+    <Style x:Key="OnColorLabelStyle" TargetType="TextBlock">
+        <Setter Property="FontSize" Value="11" />
+        <Setter Property="FontWeight" Value="SemiBold" />
+        <Setter Property="CharacterSpacing" Value="110" />
+        <Setter Property="Foreground" Value="{StaticResource NexoraOnColorSubtleBrush}" />
+    </Style>
+    <Style x:Key="OnColorSubtleStyle" TargetType="TextBlock">
+        <Setter Property="FontSize" Value="12" />
+        <Setter Property="Foreground" Value="{StaticResource NexoraOnColorSubtleBrush}" />
+        <Setter Property="TextWrapping" Value="WrapWholeWords" />
     </Style>
 
     <Style x:Key="InsetStyle" TargetType="Border">

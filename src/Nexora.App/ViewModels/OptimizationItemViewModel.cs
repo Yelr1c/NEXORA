@@ -41,6 +41,17 @@ public sealed class OptimizationItemViewModel : ObservableObject
 
     public OptimizationCategory CategoryValue => Optimization.Category;
 
+    /// <summary>Gradient that identifies the category (stripe on the card).</summary>
+    public Microsoft.UI.Xaml.Media.Brush CategoryBrush => (Microsoft.UI.Xaml.Media.Brush)Microsoft.UI.Xaml.Application.Current.Resources[Optimization.Category switch
+    {
+        OptimizationCategory.Gaming => "NexoraPurpleGradient",
+        OptimizationCategory.Network => "NexoraTealGradient",
+        OptimizationCategory.Power => "NexoraOrangeGradient",
+        OptimizationCategory.Storage => "NexoraCyanGradient",
+        OptimizationCategory.BackgroundProcesses => "NexoraIndigoGradient",
+        _ => "NexoraBlueGradient",
+    }];
+
     public string RiskText => OptimizationCoordinator.RiskText(Optimization.Risk);
 
     public StatusLevel RiskLevel => Optimization.Risk switch

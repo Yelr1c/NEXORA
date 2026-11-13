@@ -8,11 +8,11 @@
     Background="Transparent">
 
     <ScrollViewer VerticalScrollBarVisibility="Auto">
-        <StackPanel helpers:Entrance.Stagger="True" Padding="32,20,32,32" Spacing="20" MaxWidth="1440">
+        <StackPanel Padding="28,18,28,32" Spacing="18" MaxWidth="1560">
             <Grid>
                 <StackPanel Spacing="2">
                     <TextBlock Style="{StaticResource PageTitleStyle}" Text="Network" />
-                    <TextBlock Style="{StaticResource PageSubtitleStyle}" Text="Measure latency, jitter and packet loss, and find out where problems come from." />
+                    <TextBlock Style="{StaticResource PageSubtitleStyle}" Text="Live latency, traffic and connection quality — and where problems come from." />
                 </StackPanel>
                 <StackPanel Orientation="Horizontal" Spacing="10" HorizontalAlignment="Right" VerticalAlignment="Center">
                     <Button Style="{StaticResource SecondaryButtonStyle}" Content="Cancel" Command="{x:Bind ViewModel.CancelTestCommand}" Visibility="{x:Bind ViewModel.IsTesting, Mode=OneWay}" />
@@ -20,98 +20,139 @@
                 </StackPanel>
             </Grid>
 
-            <Border Style="{StaticResource HeroCardStyle}">
-                <StackPanel Spacing="18">
-                    <Grid ColumnSpacing="16">
-                        <Grid.ColumnDefinitions>
-                            <ColumnDefinition Width="*" />
-                            <ColumnDefinition Width="*" />
-                            <ColumnDefinition Width="*" />
-                            <ColumnDefinition Width="*" />
-                        </Grid.ColumnDefinitions>
-                        <StackPanel Spacing="6">
-                            <TextBlock Style="{StaticResource CardLabelStyle}" Text="PING" />
-                            <StackPanel Orientation="Horizontal" Spacing="6">
-                                <TextBlock Text="{x:Bind ViewModel.Ping, Mode=OneWay}" FontSize="44" FontWeight="SemiBold" TextLineBounds="Tight" />
-                                <TextBlock Text="ms" Opacity="0.6" FontSize="16" VerticalAlignment="Bottom" />
-                            </StackPanel>
+            <controls:BentoGrid helpers:Entrance.Stagger="True" ColumnSpacing="18" RowSpacing="18">
+                <!-- Ping -->
+                <Border controls:BentoGrid.Span="4" Style="{StaticResource BlueCardStyle}" Padding="26">
+                    <StackPanel Spacing="12">
+                        <StackPanel Orientation="Horizontal" Spacing="10">
+                            <Border Style="{StaticResource CardIconBadgeStyle}">
+                                <FontIcon Glyph="&#xE968;" FontSize="16" />
+                            </Border>
+                            <TextBlock Style="{StaticResource OnColorLabelStyle}" Text="PING" VerticalAlignment="Center" />
                         </StackPanel>
-                        <StackPanel Grid.Column="1" Spacing="6">
-                            <TextBlock Style="{StaticResource CardLabelStyle}" Text="JITTER" />
-                            <StackPanel Orientation="Horizontal" Spacing="6">
-                                <TextBlock Text="{x:Bind ViewModel.Jitter, Mode=OneWay}" FontSize="44" FontWeight="SemiBold" TextLineBounds="Tight" />
-                                <TextBlock Text="ms" Opacity="0.6" FontSize="16" VerticalAlignment="Bottom" />
-                            </StackPanel>
+                        <StackPanel Orientation="Horizontal" Spacing="8">
+                            <TextBlock Text="{x:Bind ViewModel.Ping, Mode=OneWay}" FontSize="76" FontWeight="SemiBold" TextLineBounds="Tight" />
+                            <TextBlock Text="ms" FontSize="20" Opacity="0.75" VerticalAlignment="Bottom" />
                         </StackPanel>
-                        <StackPanel Grid.Column="2" Spacing="6">
-                            <TextBlock Style="{StaticResource CardLabelStyle}" Text="PACKET LOSS" />
-                            <StackPanel Orientation="Horizontal" Spacing="6">
-                                <TextBlock Text="{x:Bind ViewModel.Loss, Mode=OneWay}" FontSize="44" FontWeight="SemiBold" TextLineBounds="Tight" />
-                                <TextBlock Text="%" Opacity="0.6" FontSize="16" VerticalAlignment="Bottom" />
+                        <Border HorizontalAlignment="Left" CornerRadius="12" Padding="12,5" Background="#26FFFFFF">
+                            <StackPanel Orientation="Horizontal" Spacing="8">
+                                <Ellipse Width="9" Height="9" VerticalAlignment="Center" Fill="{x:Bind ViewModel.QualityLevel, Mode=OneWay, Converter={StaticResource StatusBrush}}" />
+                                <TextBlock FontSize="13" FontWeight="SemiBold">
+                                    <Run Text="CONNECTION QUALITY  " Foreground="{StaticResource NexoraOnColorSubtleBrush}" FontSize="11" />
+                                    <Run Text="{x:Bind ViewModel.Quality, Mode=OneWay}" />
+                                </TextBlock>
                             </StackPanel>
-                        </StackPanel>
-                        <StackPanel Grid.Column="3" Spacing="6">
-                            <TextBlock Style="{StaticResource CardLabelStyle}" Text="CONNECTION QUALITY" />
-                            <StackPanel Orientation="Horizontal" Spacing="10">
-                                <Ellipse Width="12" Height="12" VerticalAlignment="Center" Fill="{x:Bind ViewModel.QualityLevel, Mode=OneWay, Converter={StaticResource StatusBrush}}" />
-                                <TextBlock Text="{x:Bind ViewModel.Quality, Mode=OneWay}" FontSize="30" FontWeight="SemiBold" />
-                            </StackPanel>
-                        </StackPanel>
-                    </Grid>
-                    <StackPanel Spacing="6" Visibility="{x:Bind ViewModel.IsTesting, Mode=OneWay}">
-                        <ProgressBar Style="{StaticResource ProgressStyle}" Value="{x:Bind ViewModel.Progress, Mode=OneWay}" />
-                        <TextBlock Text="{x:Bind ViewModel.ProgressText, Mode=OneWay}" Style="{StaticResource BodySubtleStyle}" />
+                        </Border>
+                        <TextBlock Text="{x:Bind ViewModel.LiveText, Mode=OneWay}" Style="{StaticResource OnColorSubtleStyle}" />
                     </StackPanel>
-                    <StackPanel Spacing="6">
+                </Border>
+
+                <!-- Live latency graph -->
+                <Border controls:BentoGrid.Span="8" Style="{StaticResource GlassCardStyle}">
+                    <Grid RowSpacing="10">
+                        <Grid.RowDefinitions>
+                            <RowDefinition Height="Auto" />
+                            <RowDefinition Height="*" />
+                            <RowDefinition Height="Auto" />
+                        </Grid.RowDefinitions>
                         <Grid>
-                            <TextBlock Style="{StaticResource CardLabelStyle}" Text="LATENCY OVER TIME" />
+                            <StackPanel Spacing="2">
+                                <TextBlock Style="{StaticResource SectionTitleStyle}" Text="Live latency" />
+                                <TextBlock Text="{x:Bind ViewModel.LastTested, Mode=OneWay}" Style="{StaticResource BodySubtleStyle}" />
+                            </StackPanel>
                             <TextBlock HorizontalAlignment="Right" Text="{x:Bind ViewModel.MinMax, Mode=OneWay}" FontSize="12" Foreground="{ThemeResource NexoraSubtleTextBrush}" />
                         </Grid>
-                        <controls:LineChart Height="160" Capacity="120" Unit="ms" Values="{x:Bind ViewModel.LatencyHistory, Mode=OneWay}" />
-                        <Grid>
-                            <TextBlock Text="{x:Bind ViewModel.LastTested, Mode=OneWay}" FontSize="12" Foreground="{ThemeResource NexoraSubtleTextBrush}" />
-                            <TextBlock HorizontalAlignment="Right" Text="{x:Bind ViewModel.LiveText, Mode=OneWay}" FontSize="12" Foreground="{ThemeResource NexoraSubtleTextBrush}" />
-                        </Grid>
-                    </StackPanel>
-                </StackPanel>
-            </Border>
+                        <controls:LineChart Grid.Row="1" MinHeight="200" Capacity="120" Unit="ms" Stroke="{StaticResource NexoraAccentBrush}" Values="{x:Bind ViewModel.LatencyHistory, Mode=OneWay}" />
+                        <StackPanel Grid.Row="2" Spacing="6" Visibility="{x:Bind ViewModel.IsTesting, Mode=OneWay}">
+                            <ProgressBar Style="{StaticResource ProgressStyle}" Value="{x:Bind ViewModel.Progress, Mode=OneWay}" />
+                            <TextBlock Text="{x:Bind ViewModel.ProgressText, Mode=OneWay}" Style="{StaticResource BodySubtleStyle}" />
+                        </StackPanel>
+                    </Grid>
+                </Border>
 
-            <Grid ColumnSpacing="16">
-                <Grid.ColumnDefinitions>
-                    <ColumnDefinition Width="*" />
-                    <ColumnDefinition Width="*" />
-                </Grid.ColumnDefinitions>
-                <Border Style="{StaticResource CardStyle}">
+                <!-- Download / upload / jitter / loss -->
+                <Border controls:BentoGrid.Span="3" controls:BentoGrid.CompactSpan="6" Style="{StaticResource CyanCardStyle}">
+                    <StackPanel Spacing="8">
+                        <TextBlock Style="{StaticResource OnColorLabelStyle}" Text="DOWNLOAD (LIVE)" />
+                        <StackPanel Orientation="Horizontal" Spacing="6">
+                            <TextBlock Text="{x:Bind ViewModel.DownloadText, Mode=OneWay}" Style="{StaticResource BigValueStyle}" />
+                            <TextBlock Text="Mbps" Style="{StaticResource OnColorLabelStyle}" VerticalAlignment="Bottom" />
+                        </StackPanel>
+                        <controls:LineChart Height="56" Capacity="60" ShowGrid="False" Stroke="White" Values="{x:Bind ViewModel.DownloadSeries, Mode=OneWay}" />
+                        <TextBlock Text="Traffic this PC is receiving right now" Style="{StaticResource OnColorSubtleStyle}" />
+                    </StackPanel>
+                </Border>
+                <Border controls:BentoGrid.Span="3" controls:BentoGrid.CompactSpan="6" Style="{StaticResource PurpleCardStyle}">
+                    <StackPanel Spacing="8">
+                        <TextBlock Style="{StaticResource OnColorLabelStyle}" Text="UPLOAD (LIVE)" />
+                        <StackPanel Orientation="Horizontal" Spacing="6">
+                            <TextBlock Text="{x:Bind ViewModel.UploadText, Mode=OneWay}" Style="{StaticResource BigValueStyle}" />
+                            <TextBlock Text="Mbps" Style="{StaticResource OnColorLabelStyle}" VerticalAlignment="Bottom" />
+                        </StackPanel>
+                        <controls:LineChart Height="56" Capacity="60" ShowGrid="False" Stroke="White" Values="{x:Bind ViewModel.UploadSeries, Mode=OneWay}" />
+                        <TextBlock Text="Traffic this PC is sending right now" Style="{StaticResource OnColorSubtleStyle}" />
+                    </StackPanel>
+                </Border>
+                <Border controls:BentoGrid.Span="3" controls:BentoGrid.CompactSpan="6" Style="{StaticResource TealCardStyle}">
+                    <StackPanel Spacing="10">
+                        <TextBlock Style="{StaticResource OnColorLabelStyle}" Text="JITTER" />
+                        <StackPanel Orientation="Horizontal" Spacing="6">
+                            <TextBlock Text="{x:Bind ViewModel.Jitter, Mode=OneWay}" Style="{StaticResource BigValueStyle}" />
+                            <TextBlock Text="ms" Style="{StaticResource OnColorLabelStyle}" VerticalAlignment="Bottom" />
+                        </StackPanel>
+                        <ProgressBar Height="6" MinHeight="6" CornerRadius="3" Maximum="100" Value="{x:Bind ViewModel.JitterBar, Mode=OneWay}" />
+                        <TextBlock Text="How much latency varies between packets. Under 5 ms is excellent." Style="{StaticResource OnColorSubtleStyle}" />
+                    </StackPanel>
+                </Border>
+                <Border controls:BentoGrid.Span="3" controls:BentoGrid.CompactSpan="6" Style="{StaticResource OrangeCardStyle}">
+                    <StackPanel Spacing="10">
+                        <TextBlock Style="{StaticResource OnColorLabelStyle}" Text="PACKET LOSS" />
+                        <StackPanel Orientation="Horizontal" Spacing="6">
+                            <TextBlock Text="{x:Bind ViewModel.Loss, Mode=OneWay}" Style="{StaticResource BigValueStyle}" />
+                            <TextBlock Text="%" Style="{StaticResource OnColorLabelStyle}" VerticalAlignment="Bottom" />
+                        </StackPanel>
+                        <ProgressBar Height="6" MinHeight="6" CornerRadius="3" Maximum="100" Value="{x:Bind ViewModel.LossBar, Mode=OneWay}" />
+                        <TextBlock Text="Probes that never came back. Anything above 0% causes rubber-banding." Style="{StaticResource OnColorSubtleStyle}" />
+                    </StackPanel>
+                </Border>
+
+                <!-- Quality ring / breakdown / connection -->
+                <Border controls:BentoGrid.Span="4" controls:BentoGrid.CompactSpan="12" Style="{StaticResource GlassCardStyle}">
+                    <StackPanel Spacing="12" HorizontalAlignment="Center">
+                        <controls:ScoreRing Width="200" Height="200" Thickness="12" Caption="CONNECTION QUALITY" Value="{x:Bind ViewModel.QualityScore, Mode=OneWay}" Label="{x:Bind ViewModel.Quality, Mode=OneWay}" />
+                        <TextBlock Text="{x:Bind ViewModel.QualityDetail, Mode=OneWay}" Style="{StaticResource BodySubtleStyle}" HorizontalAlignment="Center" TextAlignment="Center" />
+                    </StackPanel>
+                </Border>
+                <Border controls:BentoGrid.Span="4" controls:BentoGrid.CompactSpan="6" Style="{StaticResource GlassCardStyle}">
                     <StackPanel Spacing="12">
                         <TextBlock Style="{StaticResource SectionTitleStyle}" Text="Latency breakdown" />
                         <controls:StatTile Label="Router (gateway)" Value="{x:Bind ViewModel.GatewayLatency, Mode=OneWay}" />
                         <controls:StatTile Label="Internet" Value="{x:Bind ViewModel.InternetLatency, Mode=OneWay}" />
                         <controls:StatTile Label="DNS resolver" Value="{x:Bind ViewModel.DnsLatency, Mode=OneWay}" />
                         <controls:StatTile Label="Latency stability" Value="{x:Bind ViewModel.Stability, Mode=OneWay}" />
-                        <TextBlock Style="{StaticResource BodySubtleStyle}" FontSize="12" Text="DNS speed only affects how quickly names are looked up. It does not change your in-game ping." />
                     </StackPanel>
                 </Border>
-                <Border Grid.Column="1" Style="{StaticResource CardStyle}">
+                <Border controls:BentoGrid.Span="4" controls:BentoGrid.CompactSpan="6" Style="{StaticResource GlassCardStyle}">
                     <StackPanel Spacing="12">
                         <Grid>
                             <TextBlock Style="{StaticResource SectionTitleStyle}" Text="Active connection" />
                             <HyperlinkButton HorizontalAlignment="Right" Padding="4" Content="Refresh" Command="{x:Bind ViewModel.RefreshAdapterCommand}" />
                         </Grid>
                         <controls:StatTile Label="Adapter" Value="{x:Bind ViewModel.AdapterName, Mode=OneWay}" />
-                        <Grid ColumnSpacing="12">
+                        <Grid ColumnSpacing="10">
                             <Grid.ColumnDefinitions>
                                 <ColumnDefinition Width="*" />
                                 <ColumnDefinition Width="*" />
                             </Grid.ColumnDefinitions>
-                            <controls:StatTile Label="Connection type" Value="{x:Bind ViewModel.ConnectionType, Mode=OneWay}" />
-                            <controls:StatTile Grid.Column="1" Label="Link status" Value="{x:Bind ViewModel.LinkStatus, Mode=OneWay}" />
+                            <controls:StatTile Label="Type" Value="{x:Bind ViewModel.ConnectionType, Mode=OneWay}" />
+                            <controls:StatTile Grid.Column="1" Label="Link speed" Value="{x:Bind ViewModel.LinkSpeed, Mode=OneWay}" />
                         </Grid>
-                        <Grid ColumnSpacing="12">
+                        <Grid ColumnSpacing="10">
                             <Grid.ColumnDefinitions>
                                 <ColumnDefinition Width="*" />
                                 <ColumnDefinition Width="*" />
                             </Grid.ColumnDefinitions>
-                            <controls:StatTile Label="Link speed" Value="{x:Bind ViewModel.LinkSpeed, Mode=OneWay}" />
+                            <controls:StatTile Label="Status" Value="{x:Bind ViewModel.LinkStatus, Mode=OneWay}" />
                             <controls:StatTile Grid.Column="1" Label="IP" Value="{x:Bind ViewModel.IpVersions, Mode=OneWay}" />
                         </Grid>
                         <controls:StatTile Label="Gateway" Value="{x:Bind ViewModel.Gateway, Mode=OneWay}" />
@@ -119,80 +160,80 @@
                         <controls:StatTile Label="Wi-Fi signal" Value="{x:Bind ViewModel.WifiSignal, Mode=OneWay}" Visibility="{x:Bind ViewModel.IsWifi, Mode=OneWay}" />
                     </StackPanel>
                 </Border>
-            </Grid>
 
-            <Border Style="{StaticResource CardStyle}">
-                <StackPanel Spacing="14">
-                    <Grid>
-                        <StackPanel Spacing="2">
-                            <TextBlock Style="{StaticResource SectionTitleStyle}" Text="DNS benchmark" />
-                            <TextBlock Style="{StaticResource BodySubtleStyle}" Text="{x:Bind ViewModel.DnsSummary, Mode=OneWay}" />
-                        </StackPanel>
-                        <Button HorizontalAlignment="Right" VerticalAlignment="Center" Style="{StaticResource SecondaryButtonStyle}" Content="Run DNS benchmark" Command="{x:Bind ViewModel.RunDnsBenchmarkCommand}" />
-                    </Grid>
-                    <ProgressBar Style="{StaticResource ProgressStyle}" Value="{x:Bind ViewModel.DnsProgress, Mode=OneWay}" Visibility="{x:Bind ViewModel.IsDnsRunning, Mode=OneWay}" />
-                    <ItemsControl ItemsSource="{x:Bind ViewModel.DnsResults}">
-                        <ItemsControl.ItemsPanel>
-                            <ItemsPanelTemplate>
-                                <StackPanel Spacing="10" />
-                            </ItemsPanelTemplate>
-                        </ItemsControl.ItemsPanel>
-                        <ItemsControl.ItemTemplate>
-                            <DataTemplate x:DataType="vm:DnsResultViewModel">
-                                <Grid ColumnSpacing="14">
-                                    <Grid.ColumnDefinitions>
-                                        <ColumnDefinition Width="220" />
-                                        <ColumnDefinition Width="*" />
-                                        <ColumnDefinition Width="80" />
-                                        <ColumnDefinition Width="90" />
-                                    </Grid.ColumnDefinitions>
-                                    <StackPanel>
-                                        <TextBlock Text="{x:Bind Name}" FontWeight="SemiBold" FontSize="13" TextTrimming="CharacterEllipsis" />
-                                        <TextBlock Text="{x:Bind Address}" FontSize="11" Foreground="{ThemeResource NexoraSubtleTextBrush}" />
-                                    </StackPanel>
-                                    <ProgressBar Grid.Column="1" VerticalAlignment="Center" Height="6" MinHeight="6" CornerRadius="3" Maximum="100" Value="{x:Bind Bar}" />
-                                    <TextBlock Grid.Column="2" Text="{x:Bind Time}" VerticalAlignment="Center" FontWeight="SemiBold" />
-                                    <Border Grid.Column="3" Style="{StaticResource ChipStyle}" Visibility="{x:Bind HasBadge}">
-                                        <TextBlock Text="{x:Bind Badge}" FontSize="10" FontWeight="SemiBold" CharacterSpacing="80" HorizontalAlignment="Center" />
-                                    </Border>
-                                </Grid>
-                            </DataTemplate>
-                        </ItemsControl.ItemTemplate>
-                    </ItemsControl>
-                    <TextBlock Style="{StaticResource BodySubtleStyle}" FontSize="12" Text="NEXORA never changes your DNS automatically. To switch, open Settings › Network &amp; internet › your connection › DNS server assignment." />
-                </StackPanel>
-            </Border>
-
-            <Border Style="{StaticResource CardStyle}">
-                <StackPanel Spacing="14">
-                    <TextBlock Style="{StaticResource SectionTitleStyle}" Text="Diagnosis" />
-                    <TextBlock Style="{StaticResource BodySubtleStyle}" Text="Run a test to get an explanation of your results. NEXORA never claims that settings can shorten the physical path to a game server." />
-                    <ItemsControl ItemsSource="{x:Bind ViewModel.Insights}">
-                        <ItemsControl.ItemsPanel>
-                            <ItemsPanelTemplate>
-                                <StackPanel Spacing="10" />
-                            </ItemsPanelTemplate>
-                        </ItemsControl.ItemsPanel>
-                        <ItemsControl.ItemTemplate>
-                            <DataTemplate x:DataType="vm:InsightViewModel">
-                                <Border Style="{StaticResource InsetStyle}" Padding="14">
+                <Border controls:BentoGrid.Span="7" Style="{StaticResource GlassCardStyle}">
+                    <StackPanel Spacing="14">
+                        <Grid>
+                            <StackPanel Spacing="2">
+                                <TextBlock Style="{StaticResource SectionTitleStyle}" Text="DNS benchmark" />
+                                <TextBlock Style="{StaticResource BodySubtleStyle}" Text="{x:Bind ViewModel.DnsSummary, Mode=OneWay}" />
+                            </StackPanel>
+                            <Button HorizontalAlignment="Right" VerticalAlignment="Center" Style="{StaticResource SecondaryButtonStyle}" Content="Run DNS benchmark" Command="{x:Bind ViewModel.RunDnsBenchmarkCommand}" />
+                        </Grid>
+                        <ProgressBar Style="{StaticResource ProgressStyle}" Value="{x:Bind ViewModel.DnsProgress, Mode=OneWay}" Visibility="{x:Bind ViewModel.IsDnsRunning, Mode=OneWay}" />
+                        <ItemsControl ItemsSource="{x:Bind ViewModel.DnsResults}">
+                            <ItemsControl.ItemsPanel>
+                                <ItemsPanelTemplate>
+                                    <StackPanel Spacing="10" />
+                                </ItemsPanelTemplate>
+                            </ItemsControl.ItemsPanel>
+                            <ItemsControl.ItemTemplate>
+                                <DataTemplate x:DataType="vm:DnsResultViewModel">
                                     <Grid ColumnSpacing="14">
                                         <Grid.ColumnDefinitions>
-                                            <ColumnDefinition Width="Auto" />
+                                            <ColumnDefinition Width="220" />
                                             <ColumnDefinition Width="*" />
+                                            <ColumnDefinition Width="80" />
+                                            <ColumnDefinition Width="90" />
                                         </Grid.ColumnDefinitions>
-                                        <FontIcon Glyph="{x:Bind Glyph}" FontSize="18" VerticalAlignment="Top" Foreground="{x:Bind Level, Converter={StaticResource StatusBrush}}" />
-                                        <StackPanel Grid.Column="1" Spacing="4">
-                                            <TextBlock Text="{x:Bind Title}" FontWeight="SemiBold" />
-                                            <TextBlock Text="{x:Bind Detail}" Style="{StaticResource BodySubtleStyle}" />
+                                        <StackPanel>
+                                            <TextBlock Text="{x:Bind Name}" FontWeight="SemiBold" FontSize="13" TextTrimming="CharacterEllipsis" />
+                                            <TextBlock Text="{x:Bind Address}" FontSize="11" Foreground="{ThemeResource NexoraSubtleTextBrush}" />
                                         </StackPanel>
+                                        <ProgressBar Grid.Column="1" VerticalAlignment="Center" Height="6" MinHeight="6" CornerRadius="3" Maximum="100" Value="{x:Bind Bar}" />
+                                        <TextBlock Grid.Column="2" Text="{x:Bind Time}" VerticalAlignment="Center" FontWeight="SemiBold" />
+                                        <Border Grid.Column="3" Style="{StaticResource ChipStyle}" Visibility="{x:Bind HasBadge}">
+                                            <TextBlock Text="{x:Bind Badge}" FontSize="10" FontWeight="SemiBold" CharacterSpacing="80" HorizontalAlignment="Center" />
+                                        </Border>
                                     </Grid>
-                                </Border>
-                            </DataTemplate>
-                        </ItemsControl.ItemTemplate>
-                    </ItemsControl>
-                </StackPanel>
-            </Border>
+                                </DataTemplate>
+                            </ItemsControl.ItemTemplate>
+                        </ItemsControl>
+                        <TextBlock Style="{StaticResource BodySubtleStyle}" FontSize="12" Text="NEXORA never changes your DNS automatically. To switch, open Settings › Network &amp; internet › your connection › DNS server assignment." />
+                    </StackPanel>
+                </Border>
+
+                <Border controls:BentoGrid.Span="5" Style="{StaticResource GlassCardStyle}">
+                    <StackPanel Spacing="14">
+                        <TextBlock Style="{StaticResource SectionTitleStyle}" Text="Diagnosis" />
+                        <TextBlock Style="{StaticResource BodySubtleStyle}" Text="Run a test to get an explanation of your results. NEXORA never claims that settings can shorten the physical path to a game server." />
+                        <ItemsControl ItemsSource="{x:Bind ViewModel.Insights}">
+                            <ItemsControl.ItemsPanel>
+                                <ItemsPanelTemplate>
+                                    <StackPanel Spacing="10" />
+                                </ItemsPanelTemplate>
+                            </ItemsControl.ItemsPanel>
+                            <ItemsControl.ItemTemplate>
+                                <DataTemplate x:DataType="vm:InsightViewModel">
+                                    <Border Style="{StaticResource InsetStyle}" Padding="14">
+                                        <Grid ColumnSpacing="14">
+                                            <Grid.ColumnDefinitions>
+                                                <ColumnDefinition Width="Auto" />
+                                                <ColumnDefinition Width="*" />
+                                            </Grid.ColumnDefinitions>
+                                            <FontIcon Glyph="{x:Bind Glyph}" FontSize="18" VerticalAlignment="Top" Foreground="{x:Bind Level, Converter={StaticResource StatusBrush}}" />
+                                            <StackPanel Grid.Column="1" Spacing="4">
+                                                <TextBlock Text="{x:Bind Title}" FontWeight="SemiBold" />
+                                                <TextBlock Text="{x:Bind Detail}" Style="{StaticResource BodySubtleStyle}" />
+                                            </StackPanel>
+                                        </Grid>
+                                    </Border>
+                                </DataTemplate>
+                            </ItemsControl.ItemTemplate>
+                        </ItemsControl>
+                    </StackPanel>
+                </Border>
+            </controls:BentoGrid>
         </StackPanel>
     </ScrollViewer>
 </Page>

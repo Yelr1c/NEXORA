@@ -34,6 +34,12 @@ public sealed class GameProfileViewModel(GameProfile profile) : ObservableObject
         _ => "Detected",
     };
 
+    private static readonly string[] AvatarGradients = ["NexoraBlueGradient", "NexoraPurpleGradient", "NexoraTealGradient", "NexoraCyanGradient", "NexoraIndigoGradient", "NexoraOrangeGradient"];
+
+    /// <summary>Stable colour per game name.</summary>
+    public Microsoft.UI.Xaml.Media.Brush AvatarBrush => (Microsoft.UI.Xaml.Media.Brush)Microsoft.UI.Xaml.Application.Current.Resources[
+        AvatarGradients[(int)((uint)profile.Name.Aggregate(17, (h, c) => unchecked((h * 31) + c)) % (uint)AvatarGradients.Length)]];
+
     public string Initials => string.Concat(profile.Name.Split(' ', StringSplitOptions.RemoveEmptyEntries).Take(2).Select(w => char.ToUpperInvariant(w[0])));
 
     public string PathText => string.IsNullOrEmpty(profile.ExecutablePath) ? (profile.LaunchUri ?? "No executable selected") : profile.ExecutablePath;

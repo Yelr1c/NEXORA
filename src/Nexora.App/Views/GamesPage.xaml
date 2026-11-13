@@ -41,7 +41,7 @@
                 <ColumnDefinition Width="*" />
             </Grid.ColumnDefinitions>
 
-            <Border Style="{StaticResource CardStyle}" Padding="8">
+            <Border Style="{StaticResource GlassCardStyle}" Padding="8">
                 <Grid>
                     <TextBlock Margin="12" Style="{StaticResource BodySubtleStyle}" Text="No games yet. Use Detect games or Add game." Visibility="{x:Bind ViewModel.HasNoProfiles, Mode=OneWay}" />
                     <ListView ItemsSource="{x:Bind ViewModel.Profiles}" SelectedItem="{x:Bind ViewModel.Selected, Mode=TwoWay}" SelectionMode="Single">
@@ -52,8 +52,8 @@
                                         <ColumnDefinition Width="40" />
                                         <ColumnDefinition Width="*" />
                                     </Grid.ColumnDefinitions>
-                                    <Border Width="40" Height="40" CornerRadius="10" Background="{StaticResource NexoraAccentSoftBrush}">
-                                        <TextBlock Text="{x:Bind Initials, Mode=OneWay}" FontWeight="SemiBold" HorizontalAlignment="Center" VerticalAlignment="Center" />
+                                    <Border Width="40" Height="40" CornerRadius="12" Background="{x:Bind AvatarBrush, Mode=OneWay}">
+                                        <TextBlock Text="{x:Bind Initials, Mode=OneWay}" FontWeight="SemiBold" Foreground="White" HorizontalAlignment="Center" VerticalAlignment="Center" />
                                     </Border>
                                     <StackPanel Grid.Column="1" VerticalAlignment="Center">
                                         <TextBlock Text="{x:Bind Name, Mode=OneWay}" FontWeight="SemiBold" TextTrimming="CharacterEllipsis" />
@@ -70,7 +70,7 @@
                 </Grid>
             </Border>
 
-            <Border Grid.Column="1" Style="{StaticResource CardStyle}">
+            <Border Grid.Column="1" Style="{StaticResource GlassCardStyle}">
                 <Grid>
                     <TextBlock Style="{StaticResource BodySubtleStyle}" Text="Select a game to edit its profile." Visibility="{x:Bind ViewModel.HasNoSelection, Mode=OneWay}" />
                     <ScrollViewer VerticalScrollBarVisibility="Auto" Visibility="{x:Bind ViewModel.HasSelection, Mode=OneWay}">
