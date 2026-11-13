@@ -67,6 +67,9 @@ public partial class App : Application
 
     public static IServiceProvider Services { get; private set; } = null!;
 
+    /// <summary>XamlRoot of the main window, once its content is loaded.</summary>
+    public static XamlRoot? MainXamlRoot => _current?._window?.Content?.XamlRoot;
+
     public static T GetService<T>()
         where T : class => Services.GetRequiredService<T>();
 

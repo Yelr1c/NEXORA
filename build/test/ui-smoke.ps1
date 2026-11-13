@@ -70,7 +70,29 @@ function DialogClick([hashtable] $app, [string] $label, [string] $button, [int] 
         $dialog = $app.Window.FindFirst($Scope::Descendants, (New-Object System.Windows.Automation.PropertyCondition($AE::ClassNameProperty, 'ContentDialog')))
         if (-not $dialog) { Start-Sleep -Milliseconds 500 }
     }
-    if (-not $dialog) { if (-not $Optional) { $script:failures += "No dialog appeared for '$label'" }; Write-Host '   (no dialog)'; return }
+    if (-not $dialog) {
+        # Dialogs may be hosted in a separate popup window: search all top-level windows of the process too.
+        $tops = $AE::RootElement.FindAll($Scope::Children, (New-Object System.Windows.Automation.PropertyCondition($AE::ProcessIdProperty, $app.Process.Id)))
+        foreach ($t in $tops) {
+            $dialog = $t.FindFirst($Scope::Descendants, (New-Object System.Windows.Automation.PropertyCondition($AE::ClassNameProperty, 'ContentDialog')))
+            if ($dialog) { break }
+            if ($t.Current.ClassName -eq 'ContentDialog') { $dialog = $t; break }
+        }
+    }
+    if (-not $dialog) {
+        if (-not $Optional) {
+            $script:failures += "No dialog appeared for '$label'"
+            Write-Host '   (no dialog) top-level windows / named elements:'
+            foreach ($t in $tops) {
+                Write-Host "   [top] class=$($t.Current.ClassName) name=$($t.Current.Name)"
+                $t.FindAll($Scope::Descendants, [System.Windows.Automation.Condition]::TrueCondition) |
+                    Where-Object { $_.Current.Name -and $_.Current.ControlType.ProgrammaticName -match 'Button|Window|Pane|Text' } |
+                    Select-Object -First 60 | ForEach-Object { Write-Host "      $($_.Current.ControlType.ProgrammaticName) class=$($_.Current.ClassName) '$($_.Current.Name)'" }
+            }
+        }
+        else { Write-Host '   (no dialog)' }
+        return
+    }
     $el = Find $dialog $button
     if (-not $el) { $script:failures += "Dialog button '$button' not found for '$label'"; return }
     Click $el
@@ -154,6 +176,9 @@ finally {
     Write-Host '---- NEXORA log (errors/warnings) ----'
     Get-ChildItem (Join-Path $data 'Logs') -Filter *.log -ErrorAction SilentlyContinue | Get-Content |
         Select-String '"level":"(Warning|Error|Critical)"' | ForEach-Object { $_.Line.Substring(0, [Math]::Min(1500, $_.Line.Length)) }
+    Write-Host '---- NEXORA log (optimizations/dialogs) ----'
+    Get-ChildItem (Join-Path $data 'Logs') -Filter *.log -ErrorAction SilentlyContinue | Get-Content |
+        Select-String 'optimization|Dialog|Applied|Reverted' | ForEach-Object { $_.Line.Substring(0, [Math]::Min(400, $_.Line.Length)) }
     Write-Host '---- Windows crash events ----'
     Get-WinEvent -FilterHashtable @{ LogName = 'Application'; StartTime = (Get-Date).AddMinutes(-15) } -ErrorAction SilentlyContinue |
         Where-Object { $_.ProviderName -in 'Application Error', '.NET Runtime', 'Windows Error Reporting' -and $_.Message -match 'NEXORA' } |

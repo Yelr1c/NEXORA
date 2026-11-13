@@ -1,9 +1,10 @@
+using Microsoft.Extensions.Logging;
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
 
 namespace Nexora.App.Services;
 
-public sealed class DialogService
+public sealed class DialogService(ILogger<DialogService> logger)
 {
     private XamlRoot? _root;
     private bool _open;
@@ -33,8 +34,16 @@ public sealed class DialogService
 
     private ContentDialog? Create(string title, object content, string? primary, string close, bool destructive)
     {
-        if (_root is null || _open)
+        _root ??= App.MainXamlRoot;
+        if (_root is null)
         {
+            logger.LogWarning("Dialog '{Title}' could not be shown: the window is not ready", title);
+            return null;
+        }
+
+        if (_open)
+        {
+            logger.LogWarning("Dialog '{Title}' skipped because another dialog is open", title);
             return null;
         }
 
