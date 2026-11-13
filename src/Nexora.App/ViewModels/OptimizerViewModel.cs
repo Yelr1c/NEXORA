@@ -5,6 +5,8 @@ using Nexora.App.Services;
 using Nexora.Core.Optimization;
 using Nexora.Core.Optimization.Optimizations;
 
+using Nexora.App.Helpers;
+
 namespace Nexora.App.ViewModels;
 
 public sealed record CategoryFilter(OptimizationCategory? Category, string Label, string Glyph)
@@ -50,7 +52,7 @@ public sealed class StartupItemViewModel : ObservableObject
                 return;
             }
 
-            _ = ToggleAsync(value);
+            ToggleAsync(value).Forget("toggle startup app");
         }
     }
 
@@ -169,7 +171,7 @@ public sealed class OptimizerViewModel : ObservableObject, INavigationAware
             await LoadAsync();
         });
         RefreshCommand = new AsyncRelayCommand(LoadAsync);
-        _coordinator.Changed += (_, _) => _dispatcher.Post(() => _ = LoadHistoryAsync());
+        _coordinator.Changed += (_, _) => _dispatcher.Post(() => LoadHistoryAsync().Forget("load history"));
     }
 
     public IReadOnlyList<CategoryFilter> Categories { get; }
@@ -240,7 +242,7 @@ public sealed class OptimizerViewModel : ObservableObject, INavigationAware
             Section = 1;
         }
 
-        _ = LoadAsync();
+        LoadAsync().Forget("load optimizer");
     }
 
     public void OnNavigatedFrom()

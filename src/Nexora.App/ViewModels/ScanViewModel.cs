@@ -68,7 +68,7 @@ public sealed class RecommendationViewModel : ObservableObject
         Recommendation = recommendation;
         CanSelect = !recommendation.Optimization.RequiresAdministrator || elevated;
         // Pre-select only low-risk changes that need no elevation. Nothing is applied without the user's click.
-        _isSelected = CanSelect && recommendation.Optimization.Risk == Core.Optimization.RiskLevel.Low;
+        _isSelected = CanSelect && recommendation.Optimization.IsQuickOptimizeCandidate;
     }
 
     public ScanRecommendation Recommendation { get; }

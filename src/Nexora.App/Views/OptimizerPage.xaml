@@ -19,7 +19,7 @@
                 <TextBlock Style="{StaticResource PageSubtitleStyle}" Text="Safe, documented Windows settings. Every change is explained, backed up first and can be undone." />
             </StackPanel>
             <StackPanel Orientation="Horizontal" Spacing="10" HorizontalAlignment="Right" VerticalAlignment="Center">
-                <Button Style="{StaticResource SecondaryButtonStyle}" Command="{x:Bind ViewModel.QuickOptimizeCommand}" ToolTipService.ToolTip="Applies only low-risk changes that do not need administrator rights, after confirmation.">
+                <Button AutomationProperties.Name="Quick optimize" Style="{StaticResource SecondaryButtonStyle}" Command="{x:Bind ViewModel.QuickOptimizeCommand}" ToolTipService.ToolTip="Applies only low-risk changes that do not need administrator rights, after confirmation.">
                     <StackPanel Orientation="Horizontal" Spacing="8">
                         <FontIcon Glyph="&#xE945;" FontSize="14" />
                         <TextBlock Text="Quick optimize" />

@@ -17,7 +17,7 @@ jobs:
         run: ./build/publish-unpackaged.ps1 -Platform x64 -NoZip
       - name: UI click-through test
         shell: pwsh
-        run: ./build/test/ui-smoke.ps1 -Exe (Resolve-Path artifacts/portable/win-x64/NEXORA.exe) -OutDir smoke
+        run: ./build/test/ui-smoke.ps1 -Exe (Resolve-Path artifacts/portable/win-x64/NEXORA.exe) -OutDir smoke -StandardUser
       - uses: actions/upload-artifact@v4
         if: always()
         with:

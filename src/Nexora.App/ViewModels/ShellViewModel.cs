@@ -30,7 +30,7 @@ public sealed class ShellViewModel : ObservableObject
         IsElevated = privileges.IsElevated;
         RestartElevatedCommand = new RelayCommand(RestartElevated, () => !IsElevated);
         _monitor.SnapshotAvailable += OnSnapshot;
-        _ = LoadSystemInfoAsync(systemInfo, logger);
+        LoadSystemInfoAsync(systemInfo, logger).Forget("load system information");
     }
 
     public bool IsElevated { get; }

@@ -194,7 +194,7 @@ public sealed class GamesViewModel : ObservableObject, INavigationAware
         if (!_loaded)
         {
             _loaded = true;
-            _ = InitialLoadAsync();
+            InitialLoadAsync().Forget("load games");
         }
     }
 
@@ -259,7 +259,7 @@ public sealed class GamesViewModel : ObservableObject, INavigationAware
         Selected = vm;
         OnPropertyChanged(nameof(HasProfiles));
         OnPropertyChanged(nameof(HasNoProfiles));
-        _ = BrowseAsync();
+        BrowseAsync().Forget("browse for game");
     }
 
     private async Task BrowseAsync()
@@ -427,7 +427,7 @@ public sealed class GamesViewModel : ObservableObject, INavigationAware
             await _store.SaveAsync(Profiles.Select(x => x.Profile).ToList());
             if (launch.GameProcess is { } process)
             {
-                _ = WatchSessionAsync(profile, process, appliedIds);
+                WatchSessionAsync(profile, process, appliedIds).Forget("track game session");
             }
         }
         finally
@@ -460,7 +460,7 @@ public sealed class GamesViewModel : ObservableObject, INavigationAware
                 _frames.TargetProcessId = null;
             }
 
-            _dispatcher.Post(() => _ = RevertAsync(appliedIds, profile));
+            _dispatcher.Post(() => RevertAsync(appliedIds, profile).Forget("revert game profile"));
         }
     }
 

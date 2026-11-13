@@ -22,6 +22,8 @@ using Nexora.Platform.Windows.Monitoring;
 using Nexora.Platform.Windows.Services;
 using Nexora.Platform.Windows.Shell;
 
+using Nexora.App.Helpers;
+
 namespace Nexora.App;
 
 public partial class App : Application
@@ -75,6 +77,13 @@ public partial class App : Application
         _current?._window?.ShowError("Something went wrong", exception.Message);
     }
 
+    /// <summary>Logs a failed background operation (with full details) and informs the user without crashing.</summary>
+    public static void ReportBackgroundError(string operation, Exception exception)
+    {
+        _current?._logger.LogError(exception, "Background operation failed: {Operation}", operation);
+        _current?._window?.DispatcherQueue.TryEnqueue(() => _current._window?.ShowError($"Could not {operation}", exception.Message));
+    }
+
     public static void OnRedirectedActivation(AppActivationArguments args)
         => _current?._window?.DispatcherQueue.TryEnqueue(() => _current._window.ShowAndActivate());
 
@@ -124,7 +133,7 @@ public partial class App : Application
             _window.ShowAndActivate();
         }
 
-        _ = Task.Run(async () =>
+        Task.Run(async () =>
         {
             try
             {
@@ -138,7 +147,7 @@ public partial class App : Application
             {
                 _logger.LogWarning(ex, "Quarantine purge failed");
             }
-        });
+        }).Forget("purge quarantine");
     }
 
     private static bool IsStartupTaskActivation()
@@ -173,7 +182,7 @@ public partial class App : Application
         if (settings.FpsCaptureEnabled)
         {
             // Succeeds when elevated; otherwise reports "requires administrator" without side effects.
-            _ = Task.Run(() => GetService<IFrameRateSource>().TryStart());
+            Task.Run(() => GetService<IFrameRateSource>().TryStart()).Forget("start FPS capture");
         }
     }
 

@@ -449,3 +449,13 @@ public class TempCleanupTests
         Assert.EndsWith("MB", TempFilesCleanupOptimization.FormatBytes(5 * 1024 * 1024), StringComparison.Ordinal);
     }
 }
+
+public class PreferenceSafetyTests
+{
+    [Fact]
+    public void PersonalPreferencesAreNeverAutoSelected()
+    {
+        Assert.False(new MouseAccelerationOptimization(new FakeSystemParameters()).IsQuickOptimizeCandidate);
+        Assert.False(new UiAnimationOptimization(new FakeSystemParameters()).IsQuickOptimizeCandidate);
+    }
+}

@@ -4,6 +4,8 @@ using Nexora.App.Services;
 using Nexora.Core.Platform;
 using Nexora.Core.Settings;
 
+using Nexora.App.Helpers;
+
 namespace Nexora.App.ViewModels;
 
 public sealed record AccentOption(string Hex, string Name)
@@ -98,7 +100,7 @@ public sealed class SettingsViewModel : ObservableObject
         {
             if (value != S.StartWithWindows && !_loading)
             {
-                _ = ApplyStartupAsync(value);
+                ApplyStartupAsync(value).Forget("change startup registration");
             }
         }
     }
@@ -178,7 +180,7 @@ public sealed class SettingsViewModel : ObservableObject
             return;
         }
 
-        _ = _settings.UpdateAsync(mutate);
+        _settings.UpdateAsync(mutate).Forget("save settings");
     }
 
     private async Task ApplyStartupAsync(bool enable)

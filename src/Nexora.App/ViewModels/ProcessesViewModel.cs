@@ -179,7 +179,7 @@ public sealed class ProcessesViewModel : ObservableObject, INavigationAware
         }
 
         _refreshing = true;
-        _ = Task.Run(() =>
+        Task.Run(() =>
         {
             try
             {
@@ -194,7 +194,7 @@ public sealed class ProcessesViewModel : ObservableObject, INavigationAware
             {
                 _refreshing = false;
             }
-        });
+        }).Forget("refresh processes");
     }
 
     private void Rebuild()

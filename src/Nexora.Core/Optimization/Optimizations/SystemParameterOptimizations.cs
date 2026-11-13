@@ -22,6 +22,9 @@ public sealed class MouseAccelerationOptimization(ISystemParameters parameters) 
 
     public override OptimizationCategory Category => OptimizationCategory.Gaming;
 
+    /// <summary>Mouse feel is a personal preference: never part of Quick Optimize or scan pre-selection.</summary>
+    public override bool IsQuickOptimizeCandidate => false;
+
     public override Task<OptimizationState> GetStateAsync(CancellationToken cancellationToken = default)
     {
         var current = parameters.GetMouseSettings();

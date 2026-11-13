@@ -138,9 +138,9 @@ public sealed class DashboardViewModel : ObservableObject, INavigationAware
         }
 
         UpdateLatency();
-        _scoreTimer ??= _dispatcher.CreateTimer(TimeSpan.FromSeconds(5), () => _ = RefreshScoreAsync());
+        _scoreTimer ??= _dispatcher.CreateTimer(TimeSpan.FromSeconds(5), () => RefreshScoreAsync().Forget("refresh score"));
         _scoreTimer.Start();
-        _ = RefreshScoreAsync();
+        RefreshScoreAsync().Forget("refresh score");
     }
 
     public void OnNavigatedFrom()

@@ -5,7 +5,9 @@
 #>
 param(
     [Parameter(Mandatory)] [string] $Exe,
-    [string] $OutDir = 'smoke'
+    [string] $OutDir = 'smoke',
+    # Launch with a standard-user (non-admin) token, like a normal home PC.
+    [switch] $StandardUser
 )
 $ErrorActionPreference = 'Stop'
 Add-Type -AssemblyName UIAutomationClient, UIAutomationTypes, System.Windows.Forms, System.Drawing
@@ -22,8 +24,26 @@ function Shot([string] $name) {
     $bmp.Save((Join-Path $OutDir "$name.png")); $bmp.Dispose()
 }
 
+Add-Type -Namespace Native -Name Spi -MemberDefinition @"
+[DllImport("user32.dll")] public static extern bool SystemParametersInfo(uint a, uint p, int[] v, uint w);
+[DllImport("user32.dll")] public static extern bool SystemParametersInfo(uint a, uint p, ref int v, uint w);
+"@
+function Get-MouseState {
+    $m = New-Object int[] 3; [void][Native.Spi]::SystemParametersInfo(0x0003, 0, $m, 0)
+    $speed = 0; [void][Native.Spi]::SystemParametersInfo(0x0070, 0, [ref] $speed, 0)
+    "accel=$($m -join ',') speed=$speed"
+}
+
 function Start-Nexora {
-    $p = Start-Process -FilePath $Exe -PassThru
+    if ($StandardUser) {
+        Start-Process -FilePath "$env:WINDIR\System32\runas.exe" -ArgumentList '/trustlevel:0x20000', "`"$Exe`""
+        for ($i = 0; $i -lt 40 -and -not (Get-Process NEXORA -ErrorAction SilentlyContinue); $i++) { Start-Sleep -Milliseconds 250 }
+        $p = Get-Process NEXORA -ErrorAction SilentlyContinue | Select-Object -First 1
+        if (-not $p) { throw 'NEXORA did not start under a standard-user token' }
+    }
+    else {
+        $p = Start-Process -FilePath $Exe -PassThru
+    }
     for ($i = 0; $i -lt 40; $i++) {
         Start-Sleep -Milliseconds 500
         $w = $AE::RootElement.FindFirst($Scope::Children, (New-Object System.Windows.Automation.PropertyCondition($AE::ProcessIdProperty, $p.Id)))
@@ -41,6 +61,23 @@ function Click([object] $el) {
     if ($el.TryGetCurrentPattern([System.Windows.Automation.InvokePattern]::Pattern, [ref] $pattern)) { $pattern.Invoke(); return }
     if ($el.TryGetCurrentPattern([System.Windows.Automation.SelectionItemPattern]::Pattern, [ref] $pattern)) { $pattern.Select(); return }
     throw "Element '$($el.Current.Name)' cannot be clicked"
+}
+
+function DialogClick([hashtable] $app, [string] $label, [string] $button, [int] $wait = 4, [switch] $Optional) {
+    Write-Host "==> $label"
+    $dialog = $null
+    for ($i = 0; $i -lt 10 -and -not $dialog; $i++) {
+        $dialog = $app.Window.FindFirst($Scope::Descendants, (New-Object System.Windows.Automation.PropertyCondition($AE::ClassNameProperty, 'ContentDialog')))
+        if (-not $dialog) { Start-Sleep -Milliseconds 500 }
+    }
+    if (-not $dialog) { if (-not $Optional) { $script:failures += "No dialog appeared for '$label'" }; Write-Host '   (no dialog)'; return }
+    $el = Find $dialog $button
+    if (-not $el) { $script:failures += "Dialog button '$button' not found for '$label'"; return }
+    Click $el
+    Start-Sleep -Seconds $wait
+    Shot ($label -replace '[^A-Za-z0-9]+', '-')
+    $app.Process.Refresh()
+    if ($app.Process.HasExited) { throw "NEXORA CRASHED after: $label" }
 }
 
 function Step([hashtable] $app, [string] $label, [string] $target, [int] $wait = 4) {
@@ -72,10 +109,25 @@ try {
     Step $app 'Open Network (test)' 'Network' 3
     Step $app 'Run network test' 'RUN NETWORK TEST' 20
     Step $app 'Open Optimizer (sections)' 'Optimizer' 4
-    Step $app 'Optimizer details' 'Details' 2
     Step $app 'Startup apps tab' 'Startup apps' 3
     Step $app 'History tab' 'History' 3
     Step $app 'Optimizations tab' 'Optimizations' 3
+
+    # --- Apply, verify the mouse is untouched, undo, restore ---------------------------------
+    $mouseBefore = Get-MouseState
+    Step $app 'Quick optimize' 'Quick optimize' 2
+    DialogClick $app 'Confirm quick optimize' 'Apply' 6
+    DialogClick $app 'Dismiss result' 'OK' 2 -Optional
+    $mouseAfter = Get-MouseState
+    Write-Host "   mouse before: $mouseBefore  after: $mouseAfter"
+    if ($mouseBefore -ne $mouseAfter) { $script:failures += "Quick optimize changed mouse settings ($mouseBefore -> $mouseAfter)" }
+    Step $app 'History after apply' 'History' 3
+    Step $app 'Undo newest change' 'Undo' 4
+    DialogClick $app 'Dismiss undo result' 'OK' 2 -Optional
+    Step $app 'Restore previous configuration' 'Restore previous configuration' 2
+    DialogClick $app 'Confirm restore' 'Restore all' 5
+    DialogClick $app 'Dismiss restore result' 'OK' 2
+    Step $app 'Back to optimizations' 'Optimizations' 3
     Step $app 'Open Performance (session)' 'Performance' 3
     Step $app 'Start performance test' 'START PERFORMANCE TEST' 4
     Step $app 'Stop performance test' 'Stop test' 4

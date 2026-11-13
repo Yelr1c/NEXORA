@@ -177,7 +177,7 @@ public sealed class PerformanceViewModel : ObservableObject, INavigationAware
         {
             if (value is not null && SetProperty(ref _selectedDuration, value))
             {
-                _ = _settings.UpdateAsync(s => s.DefaultSessionDurationSeconds = value.Seconds);
+                _settings.UpdateAsync(s => s.DefaultSessionDurationSeconds = value.Seconds).Forget("save session duration");
             }
         }
     }
@@ -304,7 +304,7 @@ public sealed class PerformanceViewModel : ObservableObject, INavigationAware
 
     private void RefreshProcesses()
     {
-        _ = Task.Run(() =>
+        Task.Run(() =>
         {
             try
             {
@@ -323,7 +323,7 @@ public sealed class PerformanceViewModel : ObservableObject, INavigationAware
             {
                 // Process list changed while reading.
             }
-        });
+        }).Forget("read top processes");
     }
 
     private void OnSnapshot(object? sender, MetricSnapshot snapshot) => _dispatcher.Post(() => Update(snapshot));

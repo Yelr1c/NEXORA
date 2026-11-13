@@ -158,7 +158,7 @@ public sealed class NetworkViewModel : ObservableObject, INavigationAware
     {
         _monitor.SampleAvailable += OnLiveSample;
         UpdateLive();
-        _ = RefreshAdapterAsync();
+        RefreshAdapterAsync().Forget("read network adapter");
         if (parameter is "run" && !IsTesting)
         {
             RunTestCommand.Execute(null);

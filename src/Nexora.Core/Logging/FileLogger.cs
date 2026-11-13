@@ -200,7 +200,8 @@ public sealed class FileLoggerProvider : ILoggerProvider
                 {
                     json.WriteString("exception", exception.GetType().FullName);
                     json.WriteString("error", LogSanitizer.Sanitize(exception.Message));
-                    json.WriteString("stack", LogSanitizer.Sanitize(exception.StackTrace));
+                    // Full details including inner exceptions and their stack traces.
+                    json.WriteString("details", LogSanitizer.Sanitize(exception.ToString()));
                 }
 
                 json.WriteEndObject();
