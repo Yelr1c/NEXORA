@@ -99,9 +99,9 @@ public sealed class ShellViewModel : ObservableObject
         (SystemStatus, SystemLevel, SystemStatusDetail) = (cpu, ram, hot) switch
         {
             (_, _, true) => ("Running hot", StatusLevel.Warning, "High temperature measured"),
-            ( > 90, _, _) => ("Under heavy load", StatusLevel.Warning, $"CPU {cpu:0}%"),
-            (_, > 90, _) => ("Low memory", StatusLevel.Warning, $"RAM {ram:0}% used"),
-            _ => ("Healthy", StatusLevel.Good, $"CPU {cpu:0}% · RAM {ram:0}%"),
+            ( > 90, _, _) => ("Heavy", StatusLevel.Warning, $"CPU {cpu:0}%"),
+            (_, > 90, _) => ("Memory full", StatusLevel.Warning, $"RAM {ram:0}% used"),
+            _ => ("Normal", StatusLevel.Good, $"CPU {cpu:0}% · RAM {ram:0}%"),
         };
     });
 

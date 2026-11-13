@@ -9,6 +9,9 @@ public static class Format
     public const string Unavailable = "Unavailable on this system";
     public const string Dash = "—";
 
+    /// <summary>Placeholder for large numeric displays (a long dash looks like a bar at big font sizes).</summary>
+    public const string BigDash = "--";
+
     public static string Percent(double? value) => value is { } v ? v.ToString("0", CultureInfo.CurrentCulture) + "%" : Dash;
 
     public static string Ms(double? value) => value is { } v ? (v < 10 ? v.ToString("0.0", CultureInfo.CurrentCulture) : v.ToString("0", CultureInfo.CurrentCulture)) + " ms" : Dash;

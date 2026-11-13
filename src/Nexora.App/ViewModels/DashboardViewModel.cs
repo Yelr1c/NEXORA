@@ -48,9 +48,9 @@ public sealed class DashboardViewModel : ObservableObject, INavigationAware
     private string _gpuDetail = string.Empty;
     private string _ramText = Format.Dash;
     private string _ramDetail = string.Empty;
-    private string _fpsText = Format.Dash;
+    private string _fpsText = Format.BigDash;
     private string _fpsDetail = "Start a game to see live FPS";
-    private string _pingText = Format.Dash;
+    private string _pingText = Format.BigDash;
     private string _networkDetail = "Measuring latency…";
     private string _healthText = Format.Dash;
     private string _healthDetail = string.Empty;
@@ -422,7 +422,7 @@ public sealed class DashboardViewModel : ObservableObject, INavigationAware
         }
         else
         {
-            FpsText = Format.Dash;
+            FpsText = Format.BigDash;
             FpsDetail = "No game is rendering right now";
         }
 
@@ -444,12 +444,12 @@ public sealed class DashboardViewModel : ObservableObject, INavigationAware
         var stats = _network.GetRecentStatistics(20);
         if (stats.Sent == 0)
         {
-            PingText = Format.Dash;
+            PingText = Format.BigDash;
             NetworkDetail = _network.IsRunning ? "Measuring latency…" : "Live network monitoring is off";
             return;
         }
 
-        PingText = stats.AverageMs is { } avg ? avg.ToString("0", System.Globalization.CultureInfo.CurrentCulture) : "Lost";
+        PingText = stats.AverageMs is { } avg ? avg.ToString("0", System.Globalization.CultureInfo.CurrentCulture) : Format.BigDash;
         var quality = LatencyStatistics.Classify(stats);
         NetworkDetail = $"{quality} · jitter {Format.Ms(stats.JitterMs)} · loss {stats.PacketLossPercent:0.#}%";
         PingHistory = _network.GetSamples().TakeLast(ChartPoints).Select(s => s.RoundTripMs ?? double.NaN).ToList();

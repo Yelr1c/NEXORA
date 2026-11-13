@@ -57,10 +57,14 @@
                             ItemsSource="{x:Bind ViewModel.Targets}"
                             SelectedItem="{x:Bind ViewModel.SelectedTarget, Mode=TwoWay}"
                             DropDownOpened="OnTargetsOpened" />
-                        <StackPanel Orientation="Horizontal" Spacing="8">
+                        <Grid ColumnSpacing="8">
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="Auto" />
+                                <ColumnDefinition Width="*" />
+                            </Grid.ColumnDefinitions>
                             <Ellipse Width="7" Height="7" VerticalAlignment="Center" Fill="{StaticResource NexoraFpsBrush}" Visibility="{x:Bind ViewModel.CaptureRunning, Mode=OneWay}" />
-                            <TextBlock Text="{x:Bind ViewModel.CaptureStatus, Mode=OneWay}" FontSize="12" Foreground="{ThemeResource NexoraSubtleTextBrush}" TextWrapping="WrapWholeWords" />
-                        </StackPanel>
+                            <TextBlock Grid.Column="1" Text="{x:Bind ViewModel.CaptureStatus, Mode=OneWay}" FontSize="12" Foreground="{ThemeResource NexoraSubtleTextBrush}" TextWrapping="WrapWholeWords" />
+                        </Grid>
                         <Button Content="Start FPS capture" Style="{StaticResource SecondaryButtonStyle}" Visibility="{x:Bind ViewModel.CaptureCanStart, Mode=OneWay}" Command="{x:Bind ViewModel.StartCaptureCommand}" />
                         <Button Style="{StaticResource SecondaryButtonStyle}" Command="{x:Bind ViewModel.ToggleOverlayCommand}" AutomationProperties.Name="Toggle in-game overlay" ToolTipService.ToolTip="Shows FPS, CPU, GPU and ping on top of borderless/windowed games. Shortcut: Ctrl+Shift+F10">
                             <StackPanel Orientation="Horizontal" Spacing="8">

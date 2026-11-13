@@ -28,38 +28,41 @@
 
                 <!-- ===== TOP: score · health · gaming ===== -->
                 <Border controls:BentoGrid.Span="6" Style="{StaticResource PurpleCardStyle}" Padding="26" helpers:CardAction.NavigateTo="scan" AutomationProperties.Name="Performance score card">
-                    <Grid ColumnSpacing="28">
-                        <Grid.ColumnDefinitions>
-                            <ColumnDefinition Width="Auto" />
-                            <ColumnDefinition Width="*" />
-                        </Grid.ColumnDefinitions>
-                        <controls:ScoreRing Width="210" Height="210" Thickness="14" Value="{x:Bind ViewModel.ScoreValue, Mode=OneWay}" Label="{x:Bind ViewModel.ScoreRating, Mode=OneWay}" />
-                        <StackPanel Grid.Column="1" VerticalAlignment="Center" Spacing="12">
-                            <TextBlock Style="{StaticResource OnColorLabelStyle}" Text="SYSTEM PERFORMANCE" />
-                            <TextBlock FontSize="20" FontWeight="SemiBold" Text="{x:Bind ViewModel.ScoreSummary, Mode=OneWay}" TextWrapping="WrapWholeWords" />
-                            <ItemsControl ItemsSource="{x:Bind ViewModel.ScoreComponents}">
-                                <ItemsControl.ItemsPanel>
-                                    <ItemsPanelTemplate>
-                                        <VariableSizedWrapGrid Orientation="Horizontal" ItemWidth="170" ItemHeight="52" />
-                                    </ItemsPanelTemplate>
-                                </ItemsControl.ItemsPanel>
-                                <ItemsControl.ItemTemplate>
-                                    <DataTemplate x:DataType="vm:ScoreComponentViewModel">
-                                        <Border Margin="0,0,8,8" Padding="10,6" CornerRadius="10" Background="#1FFFFFFF">
-                                            <Grid ColumnSpacing="6">
-                                                <Grid.ColumnDefinitions>
-                                                    <ColumnDefinition Width="*" />
-                                                    <ColumnDefinition Width="Auto" />
-                                                </Grid.ColumnDefinitions>
-                                                <TextBlock Text="{x:Bind Name}" FontSize="12" VerticalAlignment="Center" TextTrimming="CharacterEllipsis" />
-                                                <TextBlock Grid.Column="1" Text="{x:Bind ScoreText}" FontSize="16" FontWeight="SemiBold" VerticalAlignment="Center" />
-                                            </Grid>
-                                        </Border>
-                                    </DataTemplate>
-                                </ItemsControl.ItemTemplate>
-                            </ItemsControl>
-                        </StackPanel>
-                    </Grid>
+                    <StackPanel Spacing="18">
+                        <Grid ColumnSpacing="24">
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="Auto" />
+                                <ColumnDefinition Width="*" />
+                            </Grid.ColumnDefinitions>
+                            <controls:ScoreRing Width="190" Height="190" Thickness="13" Value="{x:Bind ViewModel.ScoreValue, Mode=OneWay}" Label="{x:Bind ViewModel.ScoreRating, Mode=OneWay}" />
+                            <StackPanel Grid.Column="1" VerticalAlignment="Center" Spacing="10">
+                                <TextBlock Style="{StaticResource OnColorLabelStyle}" Text="SYSTEM PERFORMANCE" />
+                                <TextBlock FontSize="20" FontWeight="SemiBold" Text="{x:Bind ViewModel.ScoreSummary, Mode=OneWay}" TextWrapping="WrapWholeWords" />
+                                <TextBlock Style="{StaticResource OnColorSubtleStyle}" Text="Measured from CPU, GPU and memory headroom, storage, network, temperatures, startup load and gaming settings. Click for a full scan." />
+                            </StackPanel>
+                        </Grid>
+                        <ItemsControl ItemsSource="{x:Bind ViewModel.ScoreComponents}">
+                            <ItemsControl.ItemsPanel>
+                                <ItemsPanelTemplate>
+                                    <VariableSizedWrapGrid Orientation="Horizontal" ItemWidth="168" ItemHeight="50" />
+                                </ItemsPanelTemplate>
+                            </ItemsControl.ItemsPanel>
+                            <ItemsControl.ItemTemplate>
+                                <DataTemplate x:DataType="vm:ScoreComponentViewModel">
+                                    <Border Margin="0,0,8,8" Padding="10,6" CornerRadius="10" Background="#1FFFFFFF">
+                                        <Grid ColumnSpacing="6">
+                                            <Grid.ColumnDefinitions>
+                                                <ColumnDefinition Width="*" />
+                                                <ColumnDefinition Width="Auto" />
+                                            </Grid.ColumnDefinitions>
+                                            <TextBlock Text="{x:Bind Name}" FontSize="12" VerticalAlignment="Center" TextTrimming="CharacterEllipsis" />
+                                            <TextBlock Grid.Column="1" Text="{x:Bind ScoreText}" FontSize="16" FontWeight="SemiBold" VerticalAlignment="Center" />
+                                        </Grid>
+                                    </Border>
+                                </DataTemplate>
+                            </ItemsControl.ItemTemplate>
+                        </ItemsControl>
+                    </StackPanel>
                 </Border>
 
                 <Border controls:BentoGrid.Span="3" controls:BentoGrid.CompactSpan="6" Style="{StaticResource TealCardStyle}" helpers:CardAction.NavigateTo="performance" AutomationProperties.Name="System health card">

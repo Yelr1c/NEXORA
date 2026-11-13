@@ -83,7 +83,7 @@ public sealed class PerformanceViewModel : ObservableObject, INavigationAware
     private readonly ISettingsService _settings;
     private readonly UiDispatcher _dispatcher;
     private DispatcherQueueTimer? _processTimer;
-    private string _fpsText = Format.Dash;
+    private string _fpsText = Format.BigDash;
     private string _frameTimeText = Format.Dash;
     private string _fpsProcess = string.Empty;
     private string _cpuText = Format.Dash;
@@ -508,7 +508,7 @@ public sealed class PerformanceViewModel : ObservableObject, INavigationAware
 
     private void Update(MetricSnapshot s)
     {
-        FpsText = s.Fps is { } fps ? fps.ToString("0", CultureInfo.CurrentCulture) : Format.Dash;
+        FpsText = s.Fps is { } fps ? fps.ToString("0", CultureInfo.CurrentCulture) : Format.BigDash;
         FrameTimeText = Format.Ms(s.FrameTimeMs);
         FpsProcess = s.FpsProcessName is { } name ? name : CaptureRunning ? "Waiting for a DirectX game to render…" : CaptureStatus;
         CpuText = Format.Percent(s.CpuUsagePercent);

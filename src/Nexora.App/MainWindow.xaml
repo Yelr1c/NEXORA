@@ -86,7 +86,7 @@
                     <StackPanel Orientation="Horizontal" Spacing="7">
                         <Ellipse Width="7" Height="7" VerticalAlignment="Center" Fill="{x:Bind Shell.SystemLevelBrush, Mode=OneWay}" />
                         <TextBlock FontSize="12" VerticalAlignment="Center">
-                            <Run Text="System:" Foreground="{ThemeResource NexoraSubtleTextBrush}" />
+                            <Run Text="Load:" Foreground="{ThemeResource NexoraSubtleTextBrush}" />
                             <Run Text="{x:Bind Shell.SystemStatus, Mode=OneWay}" />
                         </TextBlock>
                     </StackPanel>

@@ -60,9 +60,9 @@ public sealed class NetworkViewModel : ObservableObject, INavigationAware
     private readonly ILogger<NetworkViewModel> _logger;
     private readonly List<double> _testSamples = [];
     private CancellationTokenSource? _cts;
-    private string _ping = Format.Dash;
-    private string _jitter = Format.Dash;
-    private string _loss = Format.Dash;
+    private string _ping = Format.BigDash;
+    private string _jitter = Format.BigDash;
+    private string _loss = Format.BigDash;
     private string _quality = "Not tested";
     private StatusLevel _qualityLevel = StatusLevel.Neutral;
     private string _gatewayLatency = Format.Dash;
@@ -205,8 +205,8 @@ public sealed class NetworkViewModel : ObservableObject, INavigationAware
 
         if (!IsTesting)
         {
-            Ping = stats.AverageMs is { } avg ? avg.ToString("0", CultureInfo.CurrentCulture) : "—";
-            Jitter = stats.JitterMs is { } j ? j.ToString("0.#", CultureInfo.CurrentCulture) : "—";
+            Ping = stats.AverageMs is { } avg ? avg.ToString("0", CultureInfo.CurrentCulture) : Format.BigDash;
+            Jitter = stats.JitterMs is { } j ? j.ToString("0.#", CultureInfo.CurrentCulture) : Format.BigDash;
             Loss = stats.PacketLossPercent.ToString("0.#", CultureInfo.CurrentCulture);
             var quality = LatencyStatistics.Classify(stats);
             Quality = quality.ToString();
@@ -461,8 +461,8 @@ public sealed class NetworkViewModel : ObservableObject, INavigationAware
     private void ShowResult(NetworkTestResult result)
     {
         var s = result.Internet;
-        Ping = s.AverageMs is { } avg ? avg.ToString("0", CultureInfo.CurrentCulture) : "—";
-        Jitter = s.JitterMs is { } j ? j.ToString("0.#", CultureInfo.CurrentCulture) : "—";
+        Ping = s.AverageMs is { } avg ? avg.ToString("0", CultureInfo.CurrentCulture) : Format.BigDash;
+        Jitter = s.JitterMs is { } j ? j.ToString("0.#", CultureInfo.CurrentCulture) : Format.BigDash;
         Loss = s.PacketLossPercent.ToString("0.#", CultureInfo.CurrentCulture);
         Quality = result.Quality.ToString();
         QualityLevel = result.Quality switch
