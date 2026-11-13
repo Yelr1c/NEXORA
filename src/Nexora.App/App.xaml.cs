@@ -117,6 +117,10 @@ public partial class App : Application
         StartBackgroundServices(settings.Current);
         settings.Changed += (_, s) => dispatcher.Post(() => ApplySettings(s));
         CreateTray();
+        if (settings.Current.OverlayEnabled)
+        {
+            GetService<OverlayService>().Show();
+        }
 
         var notifications = GetService<NotificationService>();
         notifications.Fallback = (title, message) => _tray?.ShowBalloon(title, message);
@@ -198,12 +202,23 @@ public partial class App : Application
         monitor.SetBackgroundMonitoring(settings.MonitorInBackground);
         if (!settings.FpsCaptureEnabled)
         {
+            GetService<OverlayService>().Shutdown();
             GetService<IFrameRateSource>().Stop();
         }
 
         ApplyNetworkSettings(settings);
         GetService<ThemeService>().Apply(settings);
         _window?.ApplyBackdrop(settings.HardwareAcceleration);
+        _window?.SetAmbientMotion(settings.AnimationsEnabled);
+        var overlay = GetService<OverlayService>();
+        if (settings.OverlayEnabled && !overlay.IsVisible)
+        {
+            overlay.Show();
+        }
+        else if (!settings.OverlayEnabled && overlay.IsVisible)
+        {
+            overlay.Hide();
+        }
     }
 
     private static void ApplyNetworkSettings(AppSettings settings)
@@ -253,7 +268,14 @@ public partial class App : Application
             var icon = Path.Combine(AppContext.BaseDirectory, "Assets", "Nexora.ico");
             _tray = new TrayIcon(icon, "NEXORA — Optimize. Measure. Dominate.");
             _tray.CommandInvoked += OnTrayCommand;
+            _tray.IsBoostActive = () => GetService<GameBoostService>().IsActive;
+            _tray.IsOverlayVisible = () => GetService<OverlayService>().IsVisible;
+            _tray.OverlayHotkeyPressed += (_, _) => ToggleOverlay();
             _tray.Show();
+            if (!_tray.RegisterOverlayHotkey())
+            {
+                _logger.LogInformation("Overlay hotkey Ctrl+Shift+F10 is already used by another application");
+            }
         }
         catch (Exception ex)
         {
@@ -290,10 +312,24 @@ public partial class App : Application
                 _window.NavigateTo("optimizer");
                 GetService<OptimizerViewModel>().QuickOptimizeCommand.Execute(null);
                 break;
+            case TrayCommand.GameBoost:
+                GetService<GameBoostService>().ToggleAsync().Forget("toggle Game Boost");
+                break;
+            case TrayCommand.Overlay:
+                ToggleOverlay();
+                break;
             case TrayCommand.Exit:
                 ShutdownCore();
                 break;
         }
+    }
+
+    /// <summary>Shows/hides the overlay and remembers the choice.</summary>
+    public static void ToggleOverlay()
+    {
+        var overlay = GetService<OverlayService>();
+        overlay.Toggle();
+        GetService<ISettingsService>().UpdateAsync(s => s.OverlayEnabled = overlay.IsVisible).Forget("save overlay setting");
     }
 
     private void ShutdownCore()
@@ -402,6 +438,9 @@ public partial class App : Application
         services.AddSingleton<DialogService>();
         services.AddSingleton<LiveScoreService>();
         services.AddSingleton<OptimizationCoordinator>();
+        services.AddSingleton<GameBoostService>();
+        services.AddSingleton<OverlayService>();
+        services.AddSingleton<DnsBenchmark>();
 
         // View models (singletons keep live charts and results while navigating)
         services.AddSingleton<ShellViewModel>();

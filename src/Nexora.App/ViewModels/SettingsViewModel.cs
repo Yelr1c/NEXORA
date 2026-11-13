@@ -131,6 +131,8 @@ public sealed class SettingsViewModel : ObservableObject
 
     public bool FpsCaptureEnabled { get => S.FpsCaptureEnabled; set => Save(s => s.FpsCaptureEnabled = value); }
 
+    public bool OverlayEnabled { get => S.OverlayEnabled; set => Save(s => s.OverlayEnabled = value); }
+
     public bool NetworkMonitoringEnabled { get => S.NetworkMonitoringEnabled; set => Save(s => s.NetworkMonitoringEnabled = value); }
 
     public OptionItem<int> SelectedNetworkInterval

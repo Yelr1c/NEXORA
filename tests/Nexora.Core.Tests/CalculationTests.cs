@@ -231,3 +231,42 @@ public class PerformanceScoreTests
     [InlineData(10, "Needs attention")]
     public void Ratings(int score, string rating) => Assert.Equal(rating, Scoring.ScoreResult.RatingFor(score));
 }
+
+public class DnsBenchmarkTests
+{
+    private sealed class FakeProbe(Dictionary<string, double?> latencyByIp) : IDnsProbe
+    {
+        public Task<double?> MeasureAsync(System.Net.IPAddress resolver, string hostName, TimeSpan timeout, CancellationToken cancellationToken = default)
+            => Task.FromResult(latencyByIp.TryGetValue(resolver.ToString(), out var v) ? v : null);
+    }
+
+    [Fact]
+    public async Task RanksFastestFirstAndUnreachableLast()
+    {
+        var probe = new FakeProbe(new() { ["1.1.1.1"] = 12, ["8.8.8.8"] = 20, ["9.9.9.9"] = null, ["208.67.222.222"] = 15, ["192.168.1.1"] = 30 });
+        var providers = DnsBenchmark.BuildProviderList([System.Net.IPAddress.Parse("192.168.1.1")]);
+        Assert.True(providers[0].IsCurrent);
+        Assert.Equal(5, providers.Count);
+        var results = await new DnsBenchmark(probe).RunAsync(providers, null);
+        Assert.Equal("Cloudflare", results[0].Provider.Name);
+        Assert.Equal(12, results[0].MedianMs);
+        Assert.False(results[^1].Reachable);
+        Assert.Equal("Quad9", results[^1].Provider.Name);
+    }
+
+    [Fact]
+    public void CurrentDnsThatIsAPublicProviderIsNotDuplicated()
+    {
+        var providers = DnsBenchmark.BuildProviderList([System.Net.IPAddress.Parse("8.8.8.8")]);
+        Assert.Equal(4, providers.Count);
+        Assert.Equal("Google (your DNS)", providers[0].Name);
+    }
+
+    [Fact]
+    public void SummarizeUsesMedian()
+    {
+        var r = DnsBenchmark.Summarize(new DnsProvider("x", System.Net.IPAddress.Loopback), [10, 50, 12], 6);
+        Assert.Equal(12, r.MedianMs);
+        Assert.Equal(3, r.Answered);
+    }
+}

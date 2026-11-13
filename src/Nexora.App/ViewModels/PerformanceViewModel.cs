@@ -32,6 +32,21 @@ public sealed class ProcessUsageViewModel(ProcessSnapshot snapshot)
     public string GpuText => snapshot.GpuPercent is { } g && g >= 0.5 ? Format.Percent(g) : Format.Dash;
 }
 
+public sealed class SessionHistoryItem(PerformanceSessionResult result)
+{
+    public string Date => result.StartedAt.ToLocalTime().ToString("g", CultureInfo.CurrentCulture);
+
+    public string Title => result.ProcessName ?? "System";
+
+    public string AvgFps => result.Frames is { } f ? f.AverageFps.ToString("0", CultureInfo.CurrentCulture) : Format.Dash;
+
+    public string Low1 => result.Frames is { } f ? f.OnePercentLowFps.ToString("0", CultureInfo.CurrentCulture) : Format.Dash;
+
+    public string Duration => $"{result.DurationSeconds:0} s";
+
+    public string Load => $"CPU {Format.Percent(result.Cpu.Average)} · GPU {Format.Percent(result.Gpu.Average)}";
+}
+
 public sealed class PerformanceViewModel : ObservableObject, INavigationAware
 {
     private const int ChartPoints = 120;
@@ -117,6 +132,24 @@ public sealed class PerformanceViewModel : ObservableObject, INavigationAware
     public ObservableCollection<ProcessUsageViewModel> TopProcesses { get; } = [];
 
     public ObservableCollection<string> ResultInsights { get; } = [];
+
+    public ObservableCollection<SessionHistoryItem> SessionHistory { get; } = [];
+
+    public bool HasSessionHistory => SessionHistory.Count > 0;
+
+    public RelayCommand ToggleOverlayCommand { get; } = new(App.ToggleOverlay);
+
+    private async Task LoadHistoryAsync()
+    {
+        var history = await _sessions.GetHistoryAsync();
+        SessionHistory.Clear();
+        foreach (var item in history.Take(10))
+        {
+            SessionHistory.Add(new SessionHistoryItem(item));
+        }
+
+        OnPropertyChanged(nameof(HasSessionHistory));
+    }
 
     public AsyncRelayCommand StartSessionCommand { get; }
 
@@ -244,6 +277,7 @@ public sealed class PerformanceViewModel : ObservableObject, INavigationAware
 
         RefreshTargets();
         RefreshProcesses();
+        LoadHistoryAsync().Forget("load test history");
         _processTimer ??= _dispatcher.CreateTimer(TimeSpan.FromSeconds(3), () =>
         {
             RefreshProcesses();
@@ -366,6 +400,7 @@ public sealed class PerformanceViewModel : ObservableObject, INavigationAware
 
             var result = await _sessions.RunAsync(TimeSpan.FromSeconds(SelectedDuration.Seconds));
             ShowResult(result);
+            await LoadHistoryAsync();
         }
         finally
         {

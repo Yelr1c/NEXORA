@@ -9,6 +9,8 @@ public enum TrayCommand
     NetworkMonitor = 3,
     QuickOptimize = 4,
     Exit = 5,
+    GameBoost = 6,
+    Overlay = 7,
 }
 
 /// <summary>
@@ -27,6 +29,8 @@ public sealed class TrayIcon : IDisposable
     private const uint MF_STRING = 0x0, MF_SEPARATOR = 0x800;
     private const uint TPM_RIGHTBUTTON = 0x2, TPM_RETURNCMD = 0x100, TPM_BOTTOMALIGN = 0x20;
     private const uint IMAGE_ICON = 1, LR_LOADFROMFILE = 0x10;
+    private const uint WM_HOTKEY = 0x0312;
+    private const int OverlayHotkeyId = 0x4E58;
 
     private static int _classCounter;
     private readonly WndProc _wndProc;
@@ -70,6 +74,17 @@ public sealed class TrayIcon : IDisposable
     }
 
     public event EventHandler<TrayCommand>? CommandInvoked;
+
+    /// <summary>Raised when the global overlay hotkey (Ctrl+Shift+F10) is pressed.</summary>
+    public event EventHandler? OverlayHotkeyPressed;
+
+    /// <summary>Menu labels that reflect current state (set by the app).</summary>
+    public Func<bool>? IsBoostActive { get; set; }
+
+    public Func<bool>? IsOverlayVisible { get; set; }
+
+    /// <summary>Registers Ctrl+Shift+F10. Returns false if another application already uses it.</summary>
+    public bool RegisterOverlayHotkey() => RegisterHotKey(_window, OverlayHotkeyId, 0x0002 | 0x0004 | 0x4000 /* CTRL|SHIFT|NOREPEAT */, 0x79 /* F10 */);
 
     public bool IsVisible => _added;
 
@@ -151,6 +166,12 @@ public sealed class TrayIcon : IDisposable
             return IntPtr.Zero;
         }
 
+        if (message == WM_HOTKEY && wParam.ToInt64() == OverlayHotkeyId)
+        {
+            OverlayHotkeyPressed?.Invoke(this, EventArgs.Empty);
+            return IntPtr.Zero;
+        }
+
         if (message == _taskbarCreated && _taskbarCreated != 0)
         {
             // Explorer restarted: re-add the icon.
@@ -172,6 +193,8 @@ public sealed class TrayIcon : IDisposable
             _ = AppendMenuW(menu, MF_STRING, (UIntPtr)(uint)TrayCommand.PerformanceMonitor, "Performance Monitor");
             _ = AppendMenuW(menu, MF_STRING, (UIntPtr)(uint)TrayCommand.NetworkMonitor, "Network Monitor");
             _ = AppendMenuW(menu, MF_STRING, (UIntPtr)(uint)TrayCommand.QuickOptimize, "Quick Optimize");
+            _ = AppendMenuW(menu, MF_STRING, (UIntPtr)(uint)TrayCommand.GameBoost, IsBoostActive?.Invoke() == true ? "Game Boost: turn off" : "Game Boost: turn on");
+            _ = AppendMenuW(menu, MF_STRING, (UIntPtr)(uint)TrayCommand.Overlay, (IsOverlayVisible?.Invoke() == true ? "Hide" : "Show") + " performance overlay\tCtrl+Shift+F10");
             _ = AppendMenuW(menu, MF_SEPARATOR, UIntPtr.Zero, null);
             _ = AppendMenuW(menu, MF_STRING, (UIntPtr)(uint)TrayCommand.Exit, "Exit");
             _ = GetCursorPos(out var point);
@@ -191,6 +214,11 @@ public sealed class TrayIcon : IDisposable
 
     public void Dispose()
     {
+        if (_window != IntPtr.Zero)
+        {
+            _ = UnregisterHotKey(_window, OverlayHotkeyId);
+        }
+
         Hide();
         if (_window != IntPtr.Zero)
         {
@@ -304,6 +332,12 @@ public sealed class TrayIcon : IDisposable
 
     [DllImport("user32.dll")]
     private static extern bool SetForegroundWindow(IntPtr hwnd);
+
+    [DllImport("user32.dll", SetLastError = true)]
+    private static extern bool RegisterHotKey(IntPtr hwnd, int id, uint modifiers, uint key);
+
+    [DllImport("user32.dll")]
+    private static extern bool UnregisterHotKey(IntPtr hwnd, int id);
 
     [DllImport("user32.dll")]
     private static extern bool PostMessageW(IntPtr hwnd, uint message, IntPtr wParam, IntPtr lParam);

@@ -14,6 +14,32 @@
         <!-- Solid, theme-aware background used when the Mica backdrop is disabled or unsupported. -->
         <Border x:Name="SolidBackground" Grid.RowSpan="2" Background="{ThemeResource NexoraWindowBackgroundBrush}" Visibility="Collapsed" />
 
+        <!-- Ambient light: two soft glows drifting slowly behind the UI (compositor-driven, no CPU cost). -->
+        <Grid x:Name="Ambient" Grid.RowSpan="2" IsHitTestVisible="False">
+            <Ellipse x:Name="OrbA" Width="760" Height="760" HorizontalAlignment="Left" VerticalAlignment="Top" Margin="-260,-320,0,0" Opacity="0.55" RenderTransformOrigin="0.5,0.5">
+                <Ellipse.Fill>
+                    <RadialGradientBrush>
+                        <GradientStop Offset="0" Color="#381FB6FF" />
+                        <GradientStop Offset="1" Color="#001FB6FF" />
+                    </RadialGradientBrush>
+                </Ellipse.Fill>
+                <Ellipse.RenderTransform>
+                    <CompositeTransform />
+                </Ellipse.RenderTransform>
+            </Ellipse>
+            <Ellipse x:Name="OrbB" Width="820" Height="820" HorizontalAlignment="Right" VerticalAlignment="Bottom" Margin="0,0,-300,-360" Opacity="0.5" RenderTransformOrigin="0.5,0.5">
+                <Ellipse.Fill>
+                    <RadialGradientBrush>
+                        <GradientStop Offset="0" Color="#307C6CFF" />
+                        <GradientStop Offset="1" Color="#007C6CFF" />
+                    </RadialGradientBrush>
+                </Ellipse.Fill>
+                <Ellipse.RenderTransform>
+                    <CompositeTransform />
+                </Ellipse.RenderTransform>
+            </Ellipse>
+        </Grid>
+
         <!-- Custom title bar: brand, system identity and live status. Non-interactive (drag region). -->
         <Grid x:Name="AppTitleBar" Grid.Row="0" Padding="16,0,0,0" ColumnSpacing="16">
             <Grid.ColumnDefinitions>
@@ -145,5 +171,63 @@
                     IsOpen="False" />
             </Grid>
         </NavigationView>
+
+        <!-- Startup animation -->
+        <Grid x:Name="Splash" Grid.RowSpan="2" Visibility="Collapsed" RenderTransformOrigin="0.5,0.5" Background="{ThemeResource NexoraWindowBackgroundBrush}">
+            <Grid.RenderTransform>
+                <CompositeTransform />
+            </Grid.RenderTransform>
+            <Ellipse x:Name="SplashGlow" Width="520" Height="520" Opacity="0" RenderTransformOrigin="0.5,0.5">
+                <Ellipse.Fill>
+                    <RadialGradientBrush>
+                        <GradientStop Offset="0" Color="#661FB6FF" />
+                        <GradientStop Offset="0.5" Color="#227C6CFF" />
+                        <GradientStop Offset="1" Color="#00000000" />
+                    </RadialGradientBrush>
+                </Ellipse.Fill>
+                <Ellipse.RenderTransform>
+                    <CompositeTransform />
+                </Ellipse.RenderTransform>
+            </Ellipse>
+            <StackPanel HorizontalAlignment="Center" VerticalAlignment="Center" Spacing="18">
+                <Grid Width="150" Height="150" HorizontalAlignment="Center">
+                    <Ellipse x:Name="SplashRing" Width="150" Height="150" StrokeThickness="2" Opacity="0" RenderTransformOrigin="0.5,0.5">
+                        <Ellipse.Stroke>
+                            <LinearGradientBrush StartPoint="0,0" EndPoint="1,1">
+                                <GradientStop Offset="0" Color="#FF1FB6FF" />
+                                <GradientStop Offset="1" Color="#FF7C6CFF" />
+                            </LinearGradientBrush>
+                        </Ellipse.Stroke>
+                        <Ellipse.RenderTransform>
+                            <CompositeTransform />
+                        </Ellipse.RenderTransform>
+                    </Ellipse>
+                    <controls:NexoraLogo x:Name="SplashLogo" Width="100" Height="100" Opacity="0" RenderTransformOrigin="0.5,0.5">
+                        <controls:NexoraLogo.RenderTransform>
+                            <CompositeTransform />
+                        </controls:NexoraLogo.RenderTransform>
+                    </controls:NexoraLogo>
+                </Grid>
+                <TextBlock x:Name="SplashTitle" Text="NEXORA" FontSize="42" FontWeight="SemiBold" CharacterSpacing="600" HorizontalAlignment="Center" Opacity="0">
+                    <TextBlock.RenderTransform>
+                        <CompositeTransform />
+                    </TextBlock.RenderTransform>
+                </TextBlock>
+                <TextBlock x:Name="SplashTagline" Text="OPTIMIZE  ·  MEASURE  ·  DOMINATE" FontSize="12" CharacterSpacing="420" HorizontalAlignment="Center" Foreground="{ThemeResource NexoraSubtleTextBrush}" Opacity="0" />
+                <Grid Width="240" Height="2" Margin="0,16,0,0" HorizontalAlignment="Center" Background="{ThemeResource NexoraChipBrush}">
+                    <Rectangle x:Name="SplashBar" RenderTransformOrigin="0,0.5">
+                        <Rectangle.Fill>
+                            <LinearGradientBrush StartPoint="0,0" EndPoint="1,0">
+                                <GradientStop Offset="0" Color="#FF1FB6FF" />
+                                <GradientStop Offset="1" Color="#FF7C6CFF" />
+                            </LinearGradientBrush>
+                        </Rectangle.Fill>
+                        <Rectangle.RenderTransform>
+                            <CompositeTransform ScaleX="0" />
+                        </Rectangle.RenderTransform>
+                    </Rectangle>
+                </Grid>
+            </StackPanel>
+        </Grid>
     </Grid>
 </Window>

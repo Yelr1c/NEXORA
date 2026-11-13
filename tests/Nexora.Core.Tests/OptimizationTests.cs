@@ -459,3 +459,56 @@ public class PreferenceSafetyTests
         Assert.False(new UiAnimationOptimization(new FakeSystemParameters()).IsQuickOptimizeCandidate);
     }
 }
+
+public class NewTweakTests
+{
+    [Fact]
+    public async Task AccessibilityShortcutsClearOnlyHotkeyFlagAndRestore()
+    {
+        var registry = new InMemoryRegistry();
+        registry.SetValue(RegistryRoot.CurrentUser, @"Control Panel\Accessibility\StickyKeys", "Flags", RegistryValue.FromString("510"));
+        // Toggle keys feature actively used (bit 1 set) must be left alone.
+        registry.SetValue(RegistryRoot.CurrentUser, @"Control Panel\Accessibility\ToggleKeys", "Flags", RegistryValue.FromString("63"));
+        var opt = new AccessibilityShortcutsOptimization(registry);
+        var backup = await opt.CreateBackupAsync();
+        await opt.ApplyAsync(backup);
+        Assert.Equal("506", registry.GetValue(RegistryRoot.CurrentUser, @"Control Panel\Accessibility\StickyKeys", "Flags")!.AsString());
+        Assert.Equal("122", registry.GetValue(RegistryRoot.CurrentUser, @"Control Panel\Accessibility\Keyboard Response", "Flags")!.AsString());
+        Assert.Equal("63", registry.GetValue(RegistryRoot.CurrentUser, @"Control Panel\Accessibility\ToggleKeys", "Flags")!.AsString());
+        await opt.RestoreAsync(backup);
+        Assert.Equal("510", registry.GetValue(RegistryRoot.CurrentUser, @"Control Panel\Accessibility\StickyKeys", "Flags")!.AsString());
+        Assert.Null(registry.GetValue(RegistryRoot.CurrentUser, @"Control Panel\Accessibility\Keyboard Response", "Flags"));
+    }
+
+    [Fact]
+    public async Task VariableRefreshRatePreservesOtherSettings()
+    {
+        var registry = new InMemoryRegistry();
+        registry.SetValue(RegistryRoot.CurrentUser, WindowedGamesOptimization.KeyPath, WindowedGamesOptimization.ValueName, RegistryValue.FromString("SwapEffectUpgradeEnable=1;"));
+        var opt = new VariableRefreshRateOptimization(registry, new FakeOs(26100));
+        Assert.Equal(OptimizationStatus.NotApplied, (await opt.GetStateAsync()).Status);
+        var backup = await opt.CreateBackupAsync();
+        await opt.ApplyAsync(backup);
+        var parsed = WindowedGamesOptimization.Parse(registry.GetValue(RegistryRoot.CurrentUser, WindowedGamesOptimization.KeyPath, WindowedGamesOptimization.ValueName)!.AsString());
+        Assert.Equal("1", parsed["SwapEffectUpgradeEnable"]);
+        Assert.Equal("1", parsed["VRROptimizeEnable"]);
+        await opt.RestoreAsync(backup);
+        Assert.Equal("SwapEffectUpgradeEnable=1;", registry.GetValue(RegistryRoot.CurrentUser, WindowedGamesOptimization.KeyPath, WindowedGamesOptimization.ValueName)!.AsString());
+    }
+
+    [Fact]
+    public void CatalogHasSeventeenDistinctTweaks()
+    {
+        var registry = new InMemoryRegistry();
+        var catalog = new StandardOptimizationCatalog(registry, new FakePower(), new FakeSystemParameters(), new FakeOs(26100), new FakeGraphicsCaps(),
+            new StartupAppsService(registry, null, null), new OptimizationCatalogOptions { TempDirectories = [], QuarantineDirectory = Path.GetTempPath() },
+            Microsoft.Extensions.Logging.Abstractions.NullLogger<StandardOptimizationCatalog>.Instance);
+        Assert.Equal(17, catalog.StaticOptimizations.Count);
+        Assert.Equal(17, catalog.StaticOptimizations.Select(o => o.Id).Distinct().Count());
+    }
+
+    private sealed class FakeGraphicsCaps : IGraphicsCapabilities
+    {
+        public bool? IsHardwareSchedulingSupported => true;
+    }
+}

@@ -28,7 +28,9 @@ public sealed class DashboardViewModel : ObservableObject, INavigationAware
     private readonly LiveScoreService _score;
     private readonly UiDispatcher _dispatcher;
     private readonly NavigationService _navigation;
+    private readonly GameBoostService _boost;
     private DispatcherQueueTimer? _scoreTimer;
+    private bool _boostBusy;
     private double _scoreValue;
     private string _scoreRating = "Measuring…";
     private string _scoreSummary = "Collecting live measurements";
@@ -55,8 +57,11 @@ public sealed class DashboardViewModel : ObservableObject, INavigationAware
     private string _cpuTempText = Format.Dash;
     private string _gpuTempText = Format.Dash;
 
-    public DashboardViewModel(MetricsMonitor monitor, NetworkMonitor network, LiveScoreService score, UiDispatcher dispatcher, NavigationService navigation)
+    public DashboardViewModel(MetricsMonitor monitor, NetworkMonitor network, LiveScoreService score, UiDispatcher dispatcher, NavigationService navigation, GameBoostService boost)
     {
+        _boost = boost;
+        ToggleBoostCommand = new AsyncRelayCommand(ToggleBoostAsync, () => !_boostBusy);
+        _boost.Changed += (_, _) => dispatcher.Post(RaiseBoost);
         _monitor = monitor;
         _network = network;
         _score = score;
@@ -69,6 +74,45 @@ public sealed class DashboardViewModel : ObservableObject, INavigationAware
     }
 
     public RelayCommand ScanCommand { get; }
+
+    public AsyncRelayCommand ToggleBoostCommand { get; }
+
+    public bool IsBoostActive => _boost.IsActive;
+
+    public bool IsBoostInactive => !_boost.IsActive;
+
+    public string BoostState => _boostBusy ? "WORKING…" : _boost.IsActive ? "ON" : "OFF";
+
+    public string BoostButtonText => _boost.IsActive ? "TURN OFF BOOST" : "ACTIVATE BOOST";
+
+    public string BoostDetail => _boost.IsActive
+        ? (_boost.ActiveCount == 0 ? "Your PC was already fully set up for gaming." : $"{_boost.ActiveCount} gaming setting(s) switched on. Turning Boost off restores them.")
+        : "One click switches on Game Mode, windowed-game optimizations, VRR, high performance power and disables background recording.";
+
+    private async Task ToggleBoostAsync()
+    {
+        _boostBusy = true;
+        RaiseBoost();
+        try
+        {
+            await _boost.ToggleAsync();
+        }
+        finally
+        {
+            _boostBusy = false;
+            RaiseBoost();
+        }
+    }
+
+    private void RaiseBoost()
+    {
+        OnPropertyChanged(nameof(IsBoostActive));
+        OnPropertyChanged(nameof(IsBoostInactive));
+        OnPropertyChanged(nameof(BoostState));
+        OnPropertyChanged(nameof(BoostButtonText));
+        OnPropertyChanged(nameof(BoostDetail));
+        ToggleBoostCommand.NotifyCanExecuteChanged();
+    }
 
     public RelayCommand OpenPerformanceCommand { get; }
 

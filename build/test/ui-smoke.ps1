@@ -152,6 +152,23 @@ try {
     DialogClick $app 'Confirm restore' 'Restore all' 5
     DialogClick $app 'Dismiss restore result' 'OK' 2
     Step $app 'Back to optimizations' 'Optimizations' 3
+
+    # --- New features: Game Boost, DNS benchmark, overlay -----------------------------------
+    $mouseBefore = Get-MouseState
+    Step $app 'Dashboard for boost' 'Dashboard' 4
+    Step $app 'Activate Game Boost' 'ACTIVATE BOOST' 2
+    DialogClick $app 'Confirm Game Boost' 'Boost' 6
+    Step $app 'Turn off Game Boost' 'TURN OFF BOOST' 6
+    $mouseAfter = Get-MouseState
+    if ($mouseBefore -ne $mouseAfter) { $script:failures += "Game Boost changed mouse settings ($mouseBefore -> $mouseAfter)" }
+    Step $app 'Network for DNS' 'Network' 3
+    Step $app 'Run DNS benchmark' 'Run DNS benchmark' 25
+    Step $app 'Performance for overlay' 'Performance' 3
+    Step $app 'Show overlay' 'Toggle in-game overlay' 4
+    $overlay = $AE::RootElement.FindAll($Scope::Children, (New-Object System.Windows.Automation.PropertyCondition($AE::ProcessIdProperty, $app.Process.Id))) |
+        Where-Object { $_.Current.Name -eq 'NEXORA Overlay' }
+    if (-not $overlay) { $script:failures += 'The in-game overlay window did not appear' } else { Write-Host '   overlay window is visible' }
+    Step $app 'Hide overlay' 'Toggle in-game overlay' 3
     Step $app 'Open Performance (session)' 'Performance' 3
     Step $app 'Start performance test' 'START PERFORMANCE TEST' 4
     Step $app 'Stop performance test' 'Stop test' 4

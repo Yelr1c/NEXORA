@@ -33,6 +33,23 @@ public sealed class InsightViewModel(NetworkInsight insight)
     };
 }
 
+public sealed class DnsResultViewModel(DnsBenchmarkResult result, double slowest, bool fastest)
+{
+    public string Name => result.Provider.Name;
+
+    public string Address => result.Provider.Address.ToString();
+
+    public string Time => result.MedianMs is { } ms ? $"{ms:0} ms" : "No answer";
+
+    public double Bar => result.MedianMs is { } ms && slowest > 0 ? Math.Max(4, 100 * ms / slowest) : 0;
+
+    public bool IsFastest => fastest;
+
+    public string Badge => fastest ? "FASTEST" : result.Provider.IsCurrent ? "CURRENT" : string.Empty;
+
+    public bool HasBadge => Badge.Length > 0;
+}
+
 public sealed class NetworkViewModel : ObservableObject, INavigationAware
 {
     private readonly NetworkTestRunner _runner;
@@ -68,9 +85,15 @@ public sealed class NetworkViewModel : ObservableObject, INavigationAware
     private IReadOnlyList<double> _latencyHistory = [];
     private string _lastTested = "Run a test to measure your connection.";
     private string _liveText = Format.Dash;
+    private readonly DnsBenchmark _dnsBenchmark;
+    private bool _isDnsRunning;
+    private double _dnsProgress;
+    private string _dnsSummary = "Compare how fast your DNS resolver answers against popular public resolvers.";
 
-    public NetworkViewModel(NetworkTestRunner runner, NetworkMonitor monitor, INetworkInfoProvider info, ISettingsService settings, UiDispatcher dispatcher, ILogger<NetworkViewModel> logger)
+    public NetworkViewModel(NetworkTestRunner runner, NetworkMonitor monitor, INetworkInfoProvider info, ISettingsService settings, UiDispatcher dispatcher, ILogger<NetworkViewModel> logger, DnsBenchmark dnsBenchmark)
     {
+        _dnsBenchmark = dnsBenchmark;
+        RunDnsBenchmarkCommand = new AsyncRelayCommand(RunDnsBenchmarkAsync, () => !IsDnsRunning);
         _runner = runner;
         _monitor = monitor;
         _info = info;
@@ -87,6 +110,56 @@ public sealed class NetworkViewModel : ObservableObject, INavigationAware
     public RelayCommand CancelTestCommand { get; }
 
     public AsyncRelayCommand RefreshAdapterCommand { get; }
+
+    public AsyncRelayCommand RunDnsBenchmarkCommand { get; }
+
+    public ObservableCollection<DnsResultViewModel> DnsResults { get; } = [];
+
+    public bool IsDnsRunning
+    {
+        get => _isDnsRunning;
+        private set
+        {
+            if (SetProperty(ref _isDnsRunning, value))
+            {
+                RunDnsBenchmarkCommand.NotifyCanExecuteChanged();
+            }
+        }
+    }
+
+    public double DnsProgress { get => _dnsProgress; private set => SetProperty(ref _dnsProgress, value); }
+
+    public string DnsSummary { get => _dnsSummary; private set => SetProperty(ref _dnsSummary, value); }
+
+    private async Task RunDnsBenchmarkAsync()
+    {
+        IsDnsRunning = true;
+        DnsProgress = 0;
+        try
+        {
+            var adapter = await Task.Run(_info.GetActiveAdapter);
+            var providers = DnsBenchmark.BuildProviderList(adapter?.DnsServers ?? []);
+            var results = await _dnsBenchmark.RunAsync(providers, new Progress<double>(p => DnsProgress = p * 100));
+            var slowest = results.Where(r => r.MedianMs.HasValue).Select(r => r.MedianMs!.Value).DefaultIfEmpty(0).Max();
+            DnsResults.Clear();
+            for (var i = 0; i < results.Count; i++)
+            {
+                DnsResults.Add(new DnsResultViewModel(results[i], slowest, i == 0 && results[i].Reachable));
+            }
+
+            var best = results.FirstOrDefault(r => r.Reachable);
+            var current = results.FirstOrDefault(r => r.Provider.IsCurrent);
+            DnsSummary = best is null
+                ? "No DNS server answered NEXORA's direct queries (some routers, VPNs and firewalls block this)."
+                : current is null || ReferenceEquals(best, current) || current.MedianMs is null
+                    ? $"{best.Provider.Name} answered fastest ({best.MedianMs:0} ms). Your current setup is already a good choice."
+                    : $"{best.Provider.Name} answers {current.MedianMs - best.MedianMs:0} ms faster than your current DNS. That speeds up looking up websites and game servers — it does not change in-game ping.";
+        }
+        finally
+        {
+            IsDnsRunning = false;
+        }
+    }
 
     public ObservableCollection<InsightViewModel> Insights { get; } = [];
 

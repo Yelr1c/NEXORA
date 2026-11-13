@@ -2,12 +2,13 @@
     x:Class="Nexora.App.Views.NetworkPage"
     xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:helpers="using:Nexora.App.Helpers"
     xmlns:controls="using:Nexora.App.Controls"
     xmlns:vm="using:Nexora.App.ViewModels"
     Background="Transparent">
 
     <ScrollViewer VerticalScrollBarVisibility="Auto">
-        <StackPanel Padding="32,20,32,32" Spacing="20" MaxWidth="1440">
+        <StackPanel helpers:Entrance.Stagger="True" Padding="32,20,32,32" Spacing="20" MaxWidth="1440">
             <Grid>
                 <StackPanel Spacing="2">
                     <TextBlock Style="{StaticResource PageTitleStyle}" Text="Network" />
@@ -119,6 +120,48 @@
                     </StackPanel>
                 </Border>
             </Grid>
+
+            <Border Style="{StaticResource CardStyle}">
+                <StackPanel Spacing="14">
+                    <Grid>
+                        <StackPanel Spacing="2">
+                            <TextBlock Style="{StaticResource SectionTitleStyle}" Text="DNS benchmark" />
+                            <TextBlock Style="{StaticResource BodySubtleStyle}" Text="{x:Bind ViewModel.DnsSummary, Mode=OneWay}" />
+                        </StackPanel>
+                        <Button HorizontalAlignment="Right" VerticalAlignment="Center" Style="{StaticResource SecondaryButtonStyle}" Content="Run DNS benchmark" Command="{x:Bind ViewModel.RunDnsBenchmarkCommand}" />
+                    </Grid>
+                    <ProgressBar Style="{StaticResource ProgressStyle}" Value="{x:Bind ViewModel.DnsProgress, Mode=OneWay}" Visibility="{x:Bind ViewModel.IsDnsRunning, Mode=OneWay}" />
+                    <ItemsControl ItemsSource="{x:Bind ViewModel.DnsResults}">
+                        <ItemsControl.ItemsPanel>
+                            <ItemsPanelTemplate>
+                                <StackPanel Spacing="10" />
+                            </ItemsPanelTemplate>
+                        </ItemsControl.ItemsPanel>
+                        <ItemsControl.ItemTemplate>
+                            <DataTemplate x:DataType="vm:DnsResultViewModel">
+                                <Grid ColumnSpacing="14">
+                                    <Grid.ColumnDefinitions>
+                                        <ColumnDefinition Width="220" />
+                                        <ColumnDefinition Width="*" />
+                                        <ColumnDefinition Width="80" />
+                                        <ColumnDefinition Width="90" />
+                                    </Grid.ColumnDefinitions>
+                                    <StackPanel>
+                                        <TextBlock Text="{x:Bind Name}" FontWeight="SemiBold" FontSize="13" TextTrimming="CharacterEllipsis" />
+                                        <TextBlock Text="{x:Bind Address}" FontSize="11" Foreground="{ThemeResource NexoraSubtleTextBrush}" />
+                                    </StackPanel>
+                                    <ProgressBar Grid.Column="1" VerticalAlignment="Center" Height="6" MinHeight="6" CornerRadius="3" Maximum="100" Value="{x:Bind Bar}" />
+                                    <TextBlock Grid.Column="2" Text="{x:Bind Time}" VerticalAlignment="Center" FontWeight="SemiBold" />
+                                    <Border Grid.Column="3" Style="{StaticResource ChipStyle}" Visibility="{x:Bind HasBadge}">
+                                        <TextBlock Text="{x:Bind Badge}" FontSize="10" FontWeight="SemiBold" CharacterSpacing="80" HorizontalAlignment="Center" />
+                                    </Border>
+                                </Grid>
+                            </DataTemplate>
+                        </ItemsControl.ItemTemplate>
+                    </ItemsControl>
+                    <TextBlock Style="{StaticResource BodySubtleStyle}" FontSize="12" Text="NEXORA never changes your DNS automatically. To switch, open Settings › Network &amp; internet › your connection › DNS server assignment." />
+                </StackPanel>
+            </Border>
 
             <Border Style="{StaticResource CardStyle}">
                 <StackPanel Spacing="14">

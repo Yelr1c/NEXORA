@@ -27,6 +27,7 @@ public static class Hover
         Brush? original = null;
         element.PointerEntered += (_, _) =>
         {
+            element.TranslationTransition = new Vector3Transition { Duration = TimeSpan.FromMilliseconds(160) };
             if (Motion.Enabled)
             {
                 element.Translation = new Vector3(0, -2, 0);

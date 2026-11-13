@@ -61,6 +61,17 @@ public sealed class AppSettings
 
     public bool ShowAdvancedOptimizations { get; set; } = true;
 
+    // Overlay
+    public bool OverlayEnabled { get; set; }
+
+    // Game Boost
+    public bool BoostActive { get; set; }
+
+    public bool BoostExplained { get; set; }
+
+    /// <summary>Optimizations switched on by Game Boost (reverted when Boost is turned off).</summary>
+    public List<string> BoostAppliedIds { get; set; } = [];
+
     // State
     public bool FirstRunCompleted { get; set; }
 

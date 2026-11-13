@@ -24,6 +24,17 @@ public sealed class OptimizationCoordinator(
 
     public bool IsElevated => privileges.IsElevated;
 
+    public OptimizationEngine Engine => engine;
+
+    public DialogService Dialogs => dialogs;
+
+    /// <summary>Notifies listeners (history, score) after changes made outside this coordinator.</summary>
+    public void RaiseChanged()
+    {
+        score.InvalidateConfiguration();
+        Changed?.Invoke(this, EventArgs.Empty);
+    }
+
     public static string RiskText(RiskLevel risk) => risk switch
     {
         RiskLevel.Low => "Low risk",
@@ -145,7 +156,7 @@ public sealed class OptimizationCoordinator(
         return entries.Any(e => e.OptimizationId == optimizationId && OptimizationEngine.CanUndo(e, entries));
     }
 
-    private UIElement BuildExplanation(IReadOnlyList<IOptimization> items)
+    public UIElement BuildExplanation(IReadOnlyList<IOptimization> items)
     {
         var panel = new StackPanel { Spacing = 14, MaxWidth = 520 };
         foreach (var item in items.Take(6))

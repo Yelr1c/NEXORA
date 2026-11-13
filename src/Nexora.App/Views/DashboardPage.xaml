@@ -8,7 +8,7 @@
     Background="Transparent">
 
     <ScrollViewer VerticalScrollBarVisibility="Auto">
-        <StackPanel Padding="32,20,32,32" Spacing="20" MaxWidth="1440">
+        <StackPanel helpers:Entrance.Stagger="True" Padding="32,20,32,32" Spacing="20" MaxWidth="1440">
             <Grid>
                 <StackPanel Spacing="2">
                     <TextBlock Style="{StaticResource PageTitleStyle}" Text="Dashboard" />
@@ -16,6 +16,49 @@
                 </StackPanel>
                 <Button HorizontalAlignment="Right" VerticalAlignment="Center" Style="{StaticResource HeroButtonStyle}" Content="SCAN MY PC" Command="{x:Bind ViewModel.ScanCommand}" />
             </Grid>
+
+            <!-- Game Boost -->
+            <Border Style="{StaticResource CardStyle}" Padding="24,20">
+                <Border.Background>
+                    <LinearGradientBrush StartPoint="0,0" EndPoint="1,0">
+                        <GradientStop Offset="0" Color="#2E7C6CFF" />
+                        <GradientStop Offset="0.6" Color="#141FB6FF" />
+                        <GradientStop Offset="1" Color="#05FFFFFF" />
+                    </LinearGradientBrush>
+                </Border.Background>
+                <Grid ColumnSpacing="24">
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="Auto" />
+                        <ColumnDefinition Width="*" />
+                        <ColumnDefinition Width="Auto" />
+                    </Grid.ColumnDefinitions>
+                    <Grid Width="64" Height="64">
+                        <Ellipse x:Name="BoostPulse" Width="64" Height="64" StrokeThickness="2" Stroke="{StaticResource NexoraAccentBrush}" RenderTransformOrigin="0.5,0.5" Opacity="0">
+                            <Ellipse.RenderTransform>
+                                <CompositeTransform />
+                            </Ellipse.RenderTransform>
+                        </Ellipse>
+                        <Ellipse Width="56" Height="56">
+                            <Ellipse.Fill>
+                                <LinearGradientBrush StartPoint="0,0" EndPoint="1,1">
+                                    <GradientStop Offset="0" Color="#FF1FB6FF" />
+                                    <GradientStop Offset="1" Color="#FF7C6CFF" />
+                                </LinearGradientBrush>
+                            </Ellipse.Fill>
+                        </Ellipse>
+                        <FontIcon Glyph="&#xE945;" FontSize="24" Foreground="White" />
+                    </Grid>
+                    <StackPanel Grid.Column="1" VerticalAlignment="Center" Spacing="4">
+                        <TextBlock FontSize="20" FontWeight="SemiBold">
+                            <Run Text="GAME BOOST" CharacterSpacing="120" />
+                            <Run Text="  " />
+                            <Run Text="{x:Bind ViewModel.BoostState, Mode=OneWay}" Foreground="{StaticResource NexoraAccentBrush}" />
+                        </TextBlock>
+                        <TextBlock Text="{x:Bind ViewModel.BoostDetail, Mode=OneWay}" Style="{StaticResource BodySubtleStyle}" />
+                    </StackPanel>
+                    <Button Grid.Column="2" VerticalAlignment="Center" Style="{StaticResource HeroButtonStyle}" Content="{x:Bind ViewModel.BoostButtonText, Mode=OneWay}" Command="{x:Bind ViewModel.ToggleBoostCommand}" />
+                </Grid>
+            </Border>
 
             <!-- Hero: performance score -->
             <Border Style="{StaticResource HeroCardStyle}">
