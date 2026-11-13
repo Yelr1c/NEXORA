@@ -67,7 +67,9 @@ function DialogClick([hashtable] $app, [string] $label, [string] $button, [int] 
     Write-Host "==> $label"
     $dialog = $null
     for ($i = 0; $i -lt 10 -and -not $dialog; $i++) {
-        $dialog = $app.Window.FindFirst($Scope::Descendants, (New-Object System.Windows.Automation.PropertyCondition($AE::ClassNameProperty, 'ContentDialog')))
+        # A WinUI ContentDialog is exposed as a Popup window named after the dialog title.
+        $dialog = $app.Window.FindAll($Scope::Descendants, (New-Object System.Windows.Automation.PropertyCondition($AE::ClassNameProperty, 'Popup'))) |
+            Where-Object { $_.Current.Name -and $_.Current.Name -ne 'Popup' -and (Find $_ $button) } | Select-Object -First 1
         if (-not $dialog) { Start-Sleep -Milliseconds 500 }
     }
     if (-not $dialog) {
