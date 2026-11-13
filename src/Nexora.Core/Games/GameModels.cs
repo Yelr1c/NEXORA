@@ -58,12 +58,48 @@ public sealed class GameProfile
 
     public DateTimeOffset? LastPlayed { get; set; }
 
-    public string EffectiveProcessName => !string.IsNullOrWhiteSpace(ProcessName)
-        ? Path.GetFileNameWithoutExtension(ProcessName)
-        : Path.GetFileNameWithoutExtension(ExecutablePath);
+    public string EffectiveProcessName => FileStem(!string.IsNullOrWhiteSpace(ProcessName) ? ProcessName : ExecutablePath);
+
+    /// <summary>File name without directory or .exe, independent of the path separator used.</summary>
+    private static string FileStem(string? path)
+    {
+        if (string.IsNullOrWhiteSpace(path))
+        {
+            return string.Empty;
+        }
+
+        var name = path[(path.LastIndexOfAny(['\\', '/']) + 1)..];
+        return name.EndsWith(".exe", StringComparison.OrdinalIgnoreCase) ? name[..^4] : name;
+    }
 }
 
-public sealed record DetectedGame(string Name, GameSource Source, string? ExecutablePath, string InstallDirectory, string? StoreId, string? LaunchUri, string? LaunchArguments);
+public sealed record DetectedGame(string Name, GameSource Source, string? ExecutablePath, string InstallDirectory, string? StoreId, string? LaunchUri, string? LaunchArguments, string? ProcessName = null);
+
+/// <summary>Maps game profiles to the process names that identify a running game.</summary>
+public static class GameProcessMatcher
+{
+    /// <summary>Launchers and clients are not games: seeing them running must not start a game session.</summary>
+    private static readonly HashSet<string> Launchers = new(StringComparer.OrdinalIgnoreCase)
+    {
+        "steam", "steamwebhelper", "EpicGamesLauncher", "RiotClientServices", "RiotClientUx", "MinecraftLauncher", "GalaxyClient",
+        "Battle.net", "EADesktop", "UbisoftConnect", "upc", "XboxPcApp",
+    };
+
+    public static Dictionary<string, GameProfile> BuildIndex(IEnumerable<GameProfile> profiles)
+    {
+        var index = new Dictionary<string, GameProfile>(StringComparer.OrdinalIgnoreCase);
+        foreach (var profile in profiles)
+        {
+            var name = profile.EffectiveProcessName;
+            if (!string.IsNullOrWhiteSpace(name) && !Launchers.Contains(name))
+            {
+                index.TryAdd(name, profile);
+            }
+        }
+
+        return index;
+    }
+}
 
 public interface IGameDetector
 {
@@ -119,6 +155,11 @@ public sealed class GameProfileStore(string path, ILogger<GameProfileStore> logg
                     match.ExecutablePath = game.ExecutablePath;
                 }
 
+                if (string.IsNullOrEmpty(match.ProcessName) && game.ProcessName is not null)
+                {
+                    match.ProcessName = game.ProcessName;
+                }
+
                 continue;
             }
 
@@ -130,6 +171,7 @@ public sealed class GameProfileStore(string path, ILogger<GameProfileStore> logg
                 ExecutablePath = game.ExecutablePath ?? string.Empty,
                 LaunchUri = game.LaunchUri,
                 LaunchArguments = game.LaunchArguments ?? string.Empty,
+                ProcessName = game.ProcessName,
                 IsDetected = true,
             });
         }

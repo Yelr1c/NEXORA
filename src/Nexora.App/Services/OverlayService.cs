@@ -160,7 +160,7 @@ public sealed class OverlayService(MetricsMonitor monitor, NetworkMonitor networ
     {
         var area = DisplayArea.Primary;
         var scale = GetDpiForWindow(WinRT.Interop.WindowNative.GetWindowHandle(window)) / 96.0;
-        var width = (int)(300 * scale);
+        var width = (int)(340 * scale);
         var height = (int)(52 * scale);
         window.AppWindow.MoveAndResize(new RectInt32(area.WorkArea.X + (int)(16 * scale), area.WorkArea.Y + (int)(16 * scale), width, height));
     }
@@ -177,7 +177,7 @@ public sealed class OverlayService(MetricsMonitor monitor, NetworkMonitor networ
         _fps.Text = s.Fps is { } fps ? fps.ToString("0", CultureInfo.CurrentCulture) : frames.Status == FrameCaptureStatus.RequiresElevation ? "admin" : "—";
         var ping = network.GetRecentStatistics(5).AverageMs;
         _detail.Text =
-            $"CPU {Fmt(s.CpuUsagePercent)}   GPU {Fmt(s.GpuUsagePercent)}\n" +
+            $"CPU {Fmt(s.CpuUsagePercent)}   GPU {Fmt(s.GpuUsagePercent)}   RAM {Fmt(s.RamTotalBytes > 0 ? s.RamUsagePercent : null)}\n" +
             $"{(s.FrameTimeMs is { } ft ? ft.ToString("0.0", CultureInfo.CurrentCulture) + " ms" : "— ms")}   Ping {(ping is { } p ? p.ToString("0", CultureInfo.CurrentCulture) + " ms" : "—")}";
     }
 

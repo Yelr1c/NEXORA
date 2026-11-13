@@ -31,6 +31,7 @@ public sealed class DashboardViewModel : ObservableObject, INavigationAware
     private readonly GameBoostService _boost;
     private DispatcherQueueTimer? _scoreTimer;
     private bool _boostBusy;
+    private readonly GameWatcherService _watcher;
     private double _scoreValue;
     private string _scoreRating = "Measuring…";
     private string _scoreSummary = "Collecting live measurements";
@@ -60,6 +61,12 @@ public sealed class DashboardViewModel : ObservableObject, INavigationAware
     public DashboardViewModel(MetricsMonitor monitor, NetworkMonitor network, LiveScoreService score, UiDispatcher dispatcher, NavigationService navigation, GameBoostService boost)
     {
         _boost = boost;
+        _watcher = App.GetService<GameWatcherService>();
+        _watcher.Changed += (_, _) =>
+        {
+            OnPropertyChanged(nameof(NowPlaying));
+            OnPropertyChanged(nameof(HasNowPlaying));
+        };
         ToggleBoostCommand = new AsyncRelayCommand(ToggleBoostAsync, () => !_boostBusy);
         _boost.Changed += (_, _) => dispatcher.Post(RaiseBoost);
         _monitor = monitor;
@@ -76,6 +83,10 @@ public sealed class DashboardViewModel : ObservableObject, INavigationAware
     public RelayCommand ScanCommand { get; }
 
     public AsyncRelayCommand ToggleBoostCommand { get; }
+
+    public string NowPlaying => _watcher.CurrentGame is { } game ? $"Now playing: {game.Name}" : string.Empty;
+
+    public bool HasNowPlaying => _watcher.CurrentGame is not null;
 
     public bool IsBoostActive => _boost.IsActive;
 

@@ -43,6 +43,12 @@
                             <Run Text="{x:Bind ViewModel.FrameTimeText, Mode=OneWay}" FontWeight="SemiBold" />
                         </TextBlock>
                         <TextBlock Text="{x:Bind ViewModel.FpsProcess, Mode=OneWay}" Style="{StaticResource BodySubtleStyle}" />
+                        <Border Style="{StaticResource InsetStyle}" Padding="10,8">
+                            <StackPanel Spacing="2">
+                                <TextBlock Style="{StaticResource CardLabelStyle}" Text="LIVE BOTTLENECK" />
+                                <TextBlock Text="{x:Bind ViewModel.LiveBottleneck, Mode=OneWay}" FontSize="12" TextWrapping="WrapWholeWords" />
+                            </StackPanel>
+                        </Border>
                         <ComboBox
                             Margin="0,8,0,0"
                             MinWidth="240"
@@ -102,6 +108,7 @@
                         <controls:StatTile Grid.Row="1" Grid.Column="1" Label="GPU frequency" Value="{x:Bind ViewModel.GpuFreqText, Mode=OneWay}" />
                         <controls:StatTile Grid.Row="1" Grid.Column="2" Label="GPU temperature" Value="{x:Bind ViewModel.GpuTempText, Mode=OneWay}" />
                         <controls:StatTile Grid.Row="1" Grid.Column="3" Label="Video memory" Value="{x:Bind ViewModel.VramText, Mode=OneWay}" />
+                        <controls:StatTile Grid.Row="1" Grid.Column="4" Label="GPU fan" Value="{x:Bind ViewModel.GpuFanText, Mode=OneWay}" />
                     </Grid>
                     <Grid ColumnSpacing="16">
                         <Grid.ColumnDefinitions>
@@ -164,6 +171,12 @@
                                 <controls:StatTile Grid.Column="3" Large="True" Label="Avg frame time" Value="{x:Bind ViewModel.AvgFrameTime, Mode=OneWay}" />
                             </Grid>
                             <TextBlock Text="{x:Bind ViewModel.ResultFrameNote, Mode=OneWay}" Style="{StaticResource BodySubtleStyle}" />
+                            <Border Style="{StaticResource InsetStyle}" Padding="14">
+                                <StackPanel Spacing="4">
+                                    <TextBlock Text="{x:Bind ViewModel.ResultBottleneckTitle, Mode=OneWay}" FontWeight="SemiBold" Foreground="{StaticResource NexoraAccentBrush}" />
+                                    <TextBlock Text="{x:Bind ViewModel.ResultBottleneckText, Mode=OneWay}" Style="{StaticResource BodyStyle}" FontSize="13" />
+                                </StackPanel>
+                            </Border>
                             <Grid ColumnSpacing="12">
                                 <Grid.ColumnDefinitions>
                                     <ColumnDefinition Width="*" />
@@ -240,6 +253,83 @@
                     </StackPanel>
                 </Border>
             </Grid>
+            <!-- NEXORA PERFORMANCE REPORT: before / after -->
+            <Border Style="{StaticResource HeroCardStyle}">
+                <StackPanel Spacing="16">
+                    <StackPanel Spacing="2">
+                        <TextBlock Style="{StaticResource CardLabelStyle}" Text="NEXORA PERFORMANCE REPORT" />
+                        <TextBlock Style="{StaticResource BodySubtleStyle}" Text="Did a change actually help? Run a test, change something (e.g. Game Boost), run the same scene again — NEXORA compares the measured results." />
+                    </StackPanel>
+                    <TextBlock Style="{StaticResource BodySubtleStyle}" Text="Record at least two performance tests to see a comparison." Visibility="{x:Bind ViewModel.CannotCompare, Mode=OneWay}" />
+                    <StackPanel Spacing="16" Visibility="{x:Bind ViewModel.CanCompare, Mode=OneWay}">
+                        <Grid ColumnSpacing="16">
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="*" />
+                                <ColumnDefinition Width="*" />
+                            </Grid.ColumnDefinitions>
+                            <ComboBox Header="Before" HorizontalAlignment="Stretch" ItemsSource="{x:Bind ViewModel.SessionChoices}" SelectedItem="{x:Bind ViewModel.CompareBefore, Mode=TwoWay}" />
+                            <ComboBox Grid.Column="1" Header="After" HorizontalAlignment="Stretch" ItemsSource="{x:Bind ViewModel.SessionChoices}" SelectedItem="{x:Bind ViewModel.CompareAfter, Mode=TwoWay}" />
+                        </Grid>
+                        <Grid ColumnSpacing="16">
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="*" />
+                                <ColumnDefinition Width="Auto" />
+                                <ColumnDefinition Width="*" />
+                            </Grid.ColumnDefinitions>
+                            <Border Style="{StaticResource InsetStyle}" Padding="18">
+                                <StackPanel HorizontalAlignment="Center" Spacing="2">
+                                    <TextBlock Style="{StaticResource CardLabelStyle}" Text="BEFORE" HorizontalAlignment="Center" />
+                                    <TextBlock Text="{x:Bind ViewModel.CompareBeforeFps, Mode=OneWay}" FontSize="48" FontWeight="SemiBold" HorizontalAlignment="Center" Opacity="0.75" />
+                                    <TextBlock Text="Average FPS" Style="{StaticResource BodySubtleStyle}" HorizontalAlignment="Center" />
+                                </StackPanel>
+                            </Border>
+                            <FontIcon Grid.Column="1" Glyph="&#xE72A;" FontSize="22" Foreground="{StaticResource NexoraAccentBrush}" />
+                            <Border Grid.Column="2" Style="{StaticResource InsetStyle}" Padding="18" BorderBrush="{StaticResource NexoraAccentSoftBrush}" BorderThickness="1">
+                                <StackPanel HorizontalAlignment="Center" Spacing="2">
+                                    <TextBlock Style="{StaticResource CardLabelStyle}" Text="AFTER" HorizontalAlignment="Center" />
+                                    <TextBlock Text="{x:Bind ViewModel.CompareAfterFps, Mode=OneWay}" FontSize="48" FontWeight="SemiBold" HorizontalAlignment="Center" Foreground="{StaticResource NexoraAccentBrush}" />
+                                    <TextBlock Text="Average FPS" Style="{StaticResource BodySubtleStyle}" HorizontalAlignment="Center" />
+                                </StackPanel>
+                            </Border>
+                        </Grid>
+                        <TextBlock Text="{x:Bind ViewModel.CompareSummary, Mode=OneWay}" FontSize="15" FontWeight="SemiBold" TextWrapping="WrapWholeWords" />
+                        <ItemsControl ItemsSource="{x:Bind ViewModel.ComparisonRows}">
+                            <ItemsControl.ItemsPanel>
+                                <ItemsPanelTemplate>
+                                    <StackPanel Spacing="8" />
+                                </ItemsPanelTemplate>
+                            </ItemsControl.ItemsPanel>
+                            <ItemsControl.ItemTemplate>
+                                <DataTemplate x:DataType="vm:ComparisonRowViewModel">
+                                    <Grid ColumnSpacing="14">
+                                        <Grid.ColumnDefinitions>
+                                            <ColumnDefinition Width="190" />
+                                            <ColumnDefinition Width="*" />
+                                            <ColumnDefinition Width="140" />
+                                        </Grid.ColumnDefinitions>
+                                        <StackPanel>
+                                            <TextBlock Text="{x:Bind Metric}" FontWeight="SemiBold" FontSize="13" />
+                                            <TextBlock Text="{x:Bind Note}" FontSize="11" Foreground="{ThemeResource NexoraSubtleTextBrush}" TextWrapping="WrapWholeWords" />
+                                        </StackPanel>
+                                        <TextBlock Grid.Column="1" VerticalAlignment="Center" FontSize="13" TextWrapping="WrapWholeWords">
+                                            <Run Text="{x:Bind Before}" Foreground="{ThemeResource NexoraSubtleTextBrush}" />
+                                            <Run Text="  →  " />
+                                            <Run Text="{x:Bind After}" />
+                                        </TextBlock>
+                                        <StackPanel Grid.Column="2" Orientation="Horizontal" Spacing="8" VerticalAlignment="Center" HorizontalAlignment="Right">
+                                            <Ellipse Width="8" Height="8" VerticalAlignment="Center" Fill="{x:Bind Level, Converter={StaticResource StatusBrush}}" />
+                                            <TextBlock Text="{x:Bind Verdict}" FontWeight="SemiBold" FontSize="13" />
+                                        </StackPanel>
+                                    </Grid>
+                                </DataTemplate>
+                            </ItemsControl.ItemTemplate>
+                        </ItemsControl>
+                        <TextBlock Text="{x:Bind ViewModel.CompareWarning, Mode=OneWay}" Foreground="{StaticResource NexoraWarningBrush}" FontSize="12" TextWrapping="WrapWholeWords" Visibility="{x:Bind ViewModel.HasCompareWarning, Mode=OneWay}" />
+                        <TextBlock Style="{StaticResource BodySubtleStyle}" FontSize="11" Text="All values are measured on this PC. Differences within normal run-to-run variation (±3% FPS, ±5% lows) are shown as &quot;No real change&quot;." />
+                    </StackPanel>
+                </StackPanel>
+            </Border>
+
             <!-- Previous tests -->
             <Border Style="{StaticResource CardStyle}" Visibility="{x:Bind ViewModel.HasSessionHistory, Mode=OneWay}">
                 <StackPanel Spacing="12">

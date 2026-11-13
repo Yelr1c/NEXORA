@@ -270,3 +270,81 @@ public class DnsBenchmarkTests
         Assert.Equal(3, r.Answered);
     }
 }
+
+public class AnalysisTests
+{
+    private static MetricSnapshot S(double cpu, double gpu, double ram = 50, double? fps = 100, double? cpuTemp = null)
+        => new() { CpuUsagePercent = cpu, GpuUsagePercent = gpu, RamTotalBytes = 100, RamUsedBytes = (long)ram, Fps = fps, CpuTemperatureCelsius = cpuTemp };
+
+    [Theory]
+    [InlineData(40, 98, 50, null, Bottleneck.Gpu)]
+    [InlineData(95, 60, 50, null, Bottleneck.Cpu)]
+    [InlineData(40, 60, 95, null, Bottleneck.Memory)]
+    [InlineData(30, 40, 50, null, Bottleneck.FrameLimit)]
+    [InlineData(40, 60, 50, 99.0, Bottleneck.Thermal)]
+    public void DetectsBottleneck(double cpu, double gpu, double ram, double? temp, Bottleneck expected)
+    {
+        var samples = Enumerable.Range(0, 5).Select(_ => S(cpu, gpu, ram, 100, temp)).ToList();
+        Assert.Equal(expected, BottleneckAnalyzer.Analyze(samples).Kind);
+    }
+
+    [Fact]
+    public void TooFewSamplesIsUnknown() => Assert.Equal(Bottleneck.Unknown, BottleneckAnalyzer.Analyze([S(50, 50)]).Kind);
+
+    private static PerformanceSessionResult Session(double avgFrameMs, double slowFrameMs, double cpu, double ram, double? ping, string app = "game")
+    {
+        var frames = Enumerable.Repeat(avgFrameMs, 990).Concat(Enumerable.Repeat(slowFrameMs, 10)).ToList();
+        return new PerformanceSessionResult
+        {
+            ProcessName = app,
+            DurationSeconds = 60,
+            Frames = FrameStatistics.Compute(frames),
+            Cpu = new MetricAggregate(cpu, cpu),
+            Ram = new MetricAggregate(ram, ram),
+            PingAverageMs = ping,
+            PingJitterMs = ping is null ? null : 2,
+        };
+    }
+
+    [Fact]
+    public void SmallDifferencesAreReportedAsNoRealChange()
+    {
+        var c = SessionComparer.Compare(Session(10, 20, 40, 50, 20), Session(9.9, 20, 41, 50, 21));
+        Assert.All(c.Rows, r => Assert.Equal(ComparisonVerdict.Unchanged, r.Verdict));
+        Assert.StartsWith("No measurable difference", c.Summary, StringComparison.Ordinal);
+        Assert.Equal("Stable", c.Rows.Single(r => r.Metric == "Network latency").VerdictText);
+    }
+
+    [Fact]
+    public void RealImprovementsAreDetected()
+    {
+        var c = SessionComparer.Compare(Session(10, 40, 60, 70, 30), Session(8, 12, 40, 50, 30));
+        Assert.Equal(ComparisonVerdict.Improved, c.Rows.Single(r => r.Metric == "Average FPS").Verdict);
+        Assert.Equal(ComparisonVerdict.Improved, c.Rows.Single(r => r.Metric == "1% low FPS").Verdict);
+        Assert.Equal(ComparisonVerdict.Improved, c.Rows.Single(r => r.Metric == "Frametime stability").Verdict);
+        Assert.Equal(ComparisonVerdict.Improved, c.Rows.Single(r => r.Metric == "System resource usage").Verdict);
+        Assert.Empty(c.Warnings);
+    }
+
+    [Fact]
+    public void WarnsWhenDifferentGamesAreCompared()
+    {
+        var c = SessionComparer.Compare(Session(10, 20, 40, 50, null, "a"), Session(10, 20, 40, 50, null, "b"));
+        Assert.NotEmpty(c.Warnings);
+        Assert.Equal(ComparisonVerdict.Unavailable, c.Rows.Single(r => r.Metric == "Network latency").Verdict);
+    }
+
+    [Fact]
+    public void AdvisorRespectsHardwareAndSituation()
+    {
+        var transparency = new Nexora.Core.Optimization.RegistryOptimization(new InMemoryRegistry(),
+            new Nexora.Core.Optimization.OptimizationDescriptor(Nexora.Core.Optimization.StandardOptimizationCatalog.TransparencyId, "t", "", "", "", "", Nexora.Core.Optimization.OptimizationCategory.Windows),
+            [new Nexora.Core.Optimization.RegistryChange(Nexora.Core.Platform.RegistryRoot.CurrentUser, "k", "v", Nexora.Core.Platform.RegistryValue.FromDWord(0))], _ => "");
+        Assert.False(Nexora.Core.Optimization.OptimizationAdvisor.Evaluate(transparency, new(HasDedicatedGpu: true)).Recommended);
+        Assert.True(Nexora.Core.Optimization.OptimizationAdvisor.Evaluate(transparency, new(HasDedicatedGpu: false)).Recommended);
+        var power = new Nexora.Core.Optimization.Optimizations.PowerPlanOptimization(new FakePower());
+        Assert.False(Nexora.Core.Optimization.OptimizationAdvisor.Evaluate(power, new(HasBattery: true, OnBattery: true)).Recommended);
+        Assert.True(Nexora.Core.Optimization.OptimizationAdvisor.Evaluate(power, new(HasBattery: false, OnBattery: false)).Recommended);
+        Assert.False(Nexora.Core.Optimization.OptimizationAdvisor.Evaluate(new Nexora.Core.Optimization.Optimizations.MouseAccelerationOptimization(new FakeSystemParameters()), new()).Recommended);
+    }
+}

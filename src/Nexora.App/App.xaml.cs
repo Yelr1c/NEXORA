@@ -117,6 +117,7 @@ public partial class App : Application
         StartBackgroundServices(settings.Current);
         settings.Changed += (_, s) => dispatcher.Post(() => ApplySettings(s));
         CreateTray();
+        GetService<GameWatcherService>().Start();
         if (settings.Current.OverlayEnabled)
         {
             GetService<OverlayService>().Show();
@@ -202,6 +203,7 @@ public partial class App : Application
         monitor.SetBackgroundMonitoring(settings.MonitorInBackground);
         if (!settings.FpsCaptureEnabled)
         {
+            GetService<GameWatcherService>().Stop();
             GetService<OverlayService>().Shutdown();
             GetService<IFrameRateSource>().Stop();
         }
@@ -407,7 +409,12 @@ public partial class App : Application
         services.AddSingleton<NetworkMonitor>();
         services.AddSingleton(sp => new PerformanceSessionService(
             sp.GetRequiredService<MetricsMonitor>(), sp.GetRequiredService<IFrameRateSource>(), Path.Combine(paths.DataDirectory, "sessions.json"),
-            sp.GetRequiredService<ILogger<PerformanceSessionService>>()));
+            sp.GetRequiredService<ILogger<PerformanceSessionService>>(),
+            latency: () =>
+            {
+                var stats = sp.GetRequiredService<NetworkMonitor>().GetRecentStatistics(30);
+                return stats.Received > 0 ? (stats.AverageMs, stats.JitterMs) : (null, null);
+            }));
 
         // Optimization
         services.AddSingleton(sp => new StartupAppsService(
@@ -441,6 +448,7 @@ public partial class App : Application
         services.AddSingleton<GameBoostService>();
         services.AddSingleton<OverlayService>();
         services.AddSingleton<DnsBenchmark>();
+        services.AddSingleton<GameWatcherService>();
 
         // View models (singletons keep live charts and results while navigating)
         services.AddSingleton<ShellViewModel>();

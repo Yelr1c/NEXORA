@@ -68,7 +68,7 @@ public sealed class RecommendationViewModel : ObservableObject
         Recommendation = recommendation;
         CanSelect = !recommendation.Optimization.RequiresAdministrator || elevated;
         // Pre-select only low-risk changes that need no elevation. Nothing is applied without the user's click.
-        _isSelected = CanSelect && recommendation.Optimization.IsQuickOptimizeCandidate;
+        _isSelected = CanSelect && recommendation.IsRecommended && recommendation.Optimization.IsQuickOptimizeCandidate;
     }
 
     public ScanRecommendation Recommendation { get; }
@@ -84,6 +84,10 @@ public sealed class RecommendationViewModel : ObservableObject
     public string RiskText => OptimizationCoordinator.RiskText(Recommendation.Optimization.Risk);
 
     public string Current => "Current: " + Recommendation.State.CurrentValue;
+
+    public string Reason => (Recommendation.IsRecommended ? "✓ Recommended: " : "Optional: ") + (Recommendation.Advice?.Reason ?? string.Empty);
+
+    public bool IsRecommended => Recommendation.IsRecommended;
 
     public bool CanSelect { get; }
 
@@ -266,7 +270,11 @@ public sealed class ScanViewModel : ObservableObject, INavigationAware
             Recommendations.Add(new RecommendationViewModel(recommendation, _coordinator.IsElevated));
         }
 
-        ImprovementsText = Recommendations.Count == 0 ? "No further optimizations available" : $"{Recommendations.Count} optimization{(Recommendations.Count == 1 ? string.Empty : "s")} available";
+        var recommended = report.RecommendedCount;
+        var optional = Recommendations.Count - recommended;
+        ImprovementsText = Recommendations.Count == 0
+            ? "No further optimizations available"
+            : $"{recommended} recommended for your PC" + (optional > 0 ? $" · {optional} optional" : string.Empty);
         ImpactBreakdown = $"{report.HighImpactCount} high · {report.MediumImpactCount} medium · {report.LowImpactCount} low impact";
         OnPropertyChanged(nameof(HasRecommendations));
         OnPropertyChanged(nameof(HasNoRecommendations));

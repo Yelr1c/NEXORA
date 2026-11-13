@@ -64,6 +64,11 @@ public sealed class AppSettings
     // Overlay
     public bool OverlayEnabled { get; set; }
 
+    // Smart game detection
+    public bool SmartGameDetection { get; set; } = true;
+
+    public bool AutoBoostOnGameStart { get; set; }
+
     // Game Boost
     public bool BoostActive { get; set; }
 

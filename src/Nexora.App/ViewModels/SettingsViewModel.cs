@@ -133,6 +133,10 @@ public sealed class SettingsViewModel : ObservableObject
 
     public bool OverlayEnabled { get => S.OverlayEnabled; set => Save(s => s.OverlayEnabled = value); }
 
+    public bool SmartGameDetection { get => S.SmartGameDetection; set => Save(s => s.SmartGameDetection = value); }
+
+    public bool AutoBoostOnGameStart { get => S.AutoBoostOnGameStart; set => Save(s => s.AutoBoostOnGameStart = value); }
+
     public bool NetworkMonitoringEnabled { get => S.NetworkMonitoringEnabled; set => Save(s => s.NetworkMonitoringEnabled = value); }
 
     public OptionItem<int> SelectedNetworkInterval

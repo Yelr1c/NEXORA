@@ -162,7 +162,14 @@ public sealed class WindowsGameDetector(ILogger<WindowsGameDetector> logger) : I
                 "bacon" => "Legends of Runeterra",
                 _ => System.Globalization.CultureInfo.CurrentCulture.TextInfo.ToTitleCase(parts[0].Replace('_', ' ')),
             };
-            games.Add(new DetectedGame(name, GameSource.Riot, client, installPath, productId, null, $"--launch-product={parts[0]} --launch-patchline={parts[1]}"));
+            var processName = parts[0] switch
+            {
+                "valorant" => "VALORANT-Win64-Shipping",
+                "league_of_legends" => "League of Legends",
+                "bacon" => "LoR",
+                _ => null,
+            };
+            games.Add(new DetectedGame(name, GameSource.Riot, client, installPath, productId, null, $"--launch-product={parts[0]} --launch-patchline={parts[1]}", processName));
         }
     }
 
@@ -173,7 +180,8 @@ public sealed class WindowsGameDetector(ILogger<WindowsGameDetector> logger) : I
             var exe = Path.Combine(Environment.GetFolderPath(folder), "Minecraft Launcher", "MinecraftLauncher.exe");
             if (File.Exists(exe))
             {
-                games.Add(new DetectedGame("Minecraft", GameSource.Other, exe, Path.GetDirectoryName(exe)!, "minecraft-launcher", null, null));
+                // Minecraft Java runs as javaw.exe once a world is started from the launcher.
+                games.Add(new DetectedGame("Minecraft", GameSource.Other, exe, Path.GetDirectoryName(exe)!, "minecraft-launcher", null, null, "javaw"));
                 return;
             }
         }

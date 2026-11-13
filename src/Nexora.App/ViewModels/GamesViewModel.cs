@@ -355,6 +355,7 @@ public sealed class GamesViewModel : ObservableObject, INavigationAware
 
         vm.Refresh();
         await _store.SaveAsync(Profiles.Select(x => x.Profile).ToList());
+        App.GetService<GameWatcherService>().InvalidateProfiles();
         StatusText = $"Saved {p.Name}.";
     }
 

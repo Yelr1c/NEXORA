@@ -73,7 +73,7 @@ internal static unsafe class GpuInterop
         return result;
     }
 
-    public sealed record AdapterTelemetry(double? TemperatureCelsius, double? CoreFrequencyMhz);
+    public sealed record AdapterTelemetry(double? TemperatureCelsius, double? CoreFrequencyMhz, int? FanRpm = null);
 
     public static AdapterTelemetry QueryTelemetry(AdapterLuid luid)
     {
@@ -86,6 +86,7 @@ internal static unsafe class GpuInterop
         {
             double? temperature = null;
             double? frequency = null;
+            int? fan = null;
             var perf = new D3DKMT_ADAPTER_PERFDATA();
             if (Query(handle, KMTQAITYPE_ADAPTERPERFDATA, &perf, sizeof(D3DKMT_ADAPTER_PERFDATA)) && perf.Temperature > 0)
             {
@@ -95,6 +96,11 @@ internal static unsafe class GpuInterop
                 {
                     temperature = celsius;
                 }
+            }
+
+            if (perf.FanRPM is > 0 and < 20000)
+            {
+                fan = (int)perf.FanRPM;
             }
 
             var node = new D3DKMT_NODE_PERFDATA { NodeOrdinal = 0, PhysicalAdapterIndex = 0 };
@@ -107,7 +113,7 @@ internal static unsafe class GpuInterop
                 }
             }
 
-            return new AdapterTelemetry(temperature, frequency);
+            return new AdapterTelemetry(temperature, frequency, fan);
         }
         finally
         {

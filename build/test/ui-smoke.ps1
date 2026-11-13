@@ -119,6 +119,11 @@ function Step([hashtable] $app, [string] $label, [string] $target, [int] $wait =
 try {
     # --- First run: welcome → scan -------------------------------------------------------
     Remove-Item $data -Recurse -Force -ErrorAction SilentlyContinue
+    # A stand-in "game" profile (Notepad) to exercise Smart Game Detection.
+    New-Item -ItemType Directory -Force $data | Out-Null
+    $notepad = Join-Path $env:WINDIR 'System32\notepad.exe'
+    @(@{ id = 'test-game'; name = 'Test Game'; executablePath = $notepad; source = 'Custom' }) | ConvertTo-Json -Depth 3 -AsArray |
+        Set-Content (Join-Path $data 'games.json') -Encoding utf8
     $app = Start-Nexora
     Start-Sleep -Seconds 3; Shot '00-welcome'
     Step $app 'Start system scan' 'START SYSTEM SCAN' 25
@@ -172,6 +177,22 @@ try {
     Step $app 'Open Performance (session)' 'Performance' 3
     Step $app 'Start performance test' 'START PERFORMANCE TEST' 4
     Step $app 'Stop performance test' 'Stop test' 4
+    Step $app 'Second performance test' 'START PERFORMANCE TEST' 4
+    Step $app 'Stop second test' 'Stop test' 5
+    if (-not (Find $app.Window 'BEFORE')) { $script:failures += 'The before/after performance report did not appear after two tests' } else { Write-Host '   performance report is visible' }
+
+    # --- Smart game detection ----------------------------------------------------------------
+    Write-Host '==> Launch stand-in game (Notepad)'
+    $game = Start-Process $notepad -PassThru
+    $detected = $false
+    for ($i = 0; $i -lt 30 -and -not $detected; $i++) {
+        Start-Sleep -Seconds 2
+        if ($i % 5 -eq 0) { Step $app 'Dashboard (detection)' 'Dashboard' 1 }
+        $detected = [bool](Find $app.Window 'Now playing: Test Game')
+    }
+    if ($detected) { Write-Host '   game detected on dashboard' } else { $script:failures += 'Smart game detection did not show "Now playing: Test Game"' }
+    Get-Process Notepad -ErrorAction SilentlyContinue | Stop-Process -Force
+    Shot 'game-detected'
     Step $app 'Open Dashboard again' 'Dashboard' 3
     Step $app 'Scan from dashboard' 'SCAN MY PC' 25
     Step $app 'Back to dashboard' 'Back to Dashboard' 4

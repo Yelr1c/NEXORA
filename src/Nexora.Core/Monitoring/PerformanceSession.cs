@@ -42,6 +42,16 @@ public sealed class PerformanceSessionResult
 
     public int SampleCount { get; set; }
 
+    public double? PingAverageMs { get; set; }
+
+    public double? PingJitterMs { get; set; }
+
+    public Bottleneck Bottleneck { get; set; }
+
+    public string? BottleneckTitle { get; set; }
+
+    public string? BottleneckExplanation { get; set; }
+
     /// <summary>Plain-language findings derived from the measured data.</summary>
     public List<string> Insights { get; set; } = [];
 }
@@ -74,6 +84,10 @@ public static class PerformanceSessionAnalyzer
             SampleCount = samples.Count,
         };
 
+        var bottleneck = BottleneckAnalyzer.Analyze(samples);
+        result.Bottleneck = bottleneck.Kind;
+        result.BottleneckTitle = bottleneck.Title;
+        result.BottleneckExplanation = bottleneck.Explanation;
         result.FrameUnavailableReason = result.Frames is null
             ? frameUnavailableReason ?? "No frames were presented by the monitored application during the session."
             : null;
@@ -144,8 +158,11 @@ public sealed class PerformanceSessionService
     private DateTimeOffset _startedAt;
     private string? _processName;
 
-    public PerformanceSessionService(MetricsMonitor monitor, IFrameRateSource frames, string storePath, ILogger<PerformanceSessionService> logger, TimeProvider? time = null)
+    private readonly Func<(double? Average, double? Jitter)>? _latency;
+
+    public PerformanceSessionService(MetricsMonitor monitor, IFrameRateSource frames, string storePath, ILogger<PerformanceSessionService> logger, TimeProvider? time = null, Func<(double? Average, double? Jitter)>? latency = null)
     {
+        _latency = latency;
         _monitor = monitor;
         _frames = frames;
         _storePath = storePath;
@@ -232,6 +249,12 @@ public sealed class PerformanceSessionService
         {
             result = PerformanceSessionAnalyzer.Analyze(_startedAt, elapsed, _samples.ToList(), _frameTimes.ToList(), _processName,
                 frameCapture ? null : _frames.StatusMessage);
+        }
+
+        if (_latency?.Invoke() is { } latency)
+        {
+            result.PingAverageMs = latency.Average;
+            result.PingJitterMs = latency.Jitter;
         }
 
         ProgressChanged?.Invoke(this, 1);

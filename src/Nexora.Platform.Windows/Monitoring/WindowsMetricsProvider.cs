@@ -155,6 +155,7 @@ public sealed class WindowsMetricsProvider : IMetricsProvider
                 GpuUsagePercent = gpu,
                 GpuFrequencyMhz = _telemetry.CoreFrequencyMhz,
                 GpuTemperatureCelsius = _telemetry.TemperatureCelsius,
+                GpuFanRpm = _telemetry.FanRpm,
                 VramUsedBytes = vramUsed,
                 VramTotalBytes = _primaryAdapter?.Info.DedicatedMemoryBytes is > 0 and var total ? total : null,
                 RamTotalBytes = ramTotal,

@@ -32,6 +32,32 @@ public sealed class ProcessUsageViewModel(ProcessSnapshot snapshot)
     public string GpuText => snapshot.GpuPercent is { } g && g >= 0.5 ? Format.Percent(g) : Format.Dash;
 }
 
+public sealed record SessionChoice(PerformanceSessionResult Result)
+{
+    public override string ToString()
+        => $"{Result.StartedAt.ToLocalTime():g} · {Result.ProcessName ?? "System"}" + (Result.Frames is { } f ? $" · {f.AverageFps:0} FPS" : string.Empty);
+}
+
+public sealed class ComparisonRowViewModel(ComparisonRow row)
+{
+    public string Metric => row.Metric;
+
+    public string Before => row.Before;
+
+    public string After => row.After;
+
+    public string Verdict => row.VerdictText;
+
+    public string Note => row.Note;
+
+    public StatusLevel Level => row.Verdict switch
+    {
+        ComparisonVerdict.Improved => StatusLevel.Good,
+        ComparisonVerdict.Worse => StatusLevel.Problem,
+        _ => StatusLevel.Neutral,
+    };
+}
+
 public sealed class SessionHistoryItem(PerformanceSessionResult result)
 {
     public string Date => result.StartedAt.ToLocalTime().ToString("g", CultureInfo.CurrentCulture);
@@ -135,6 +161,103 @@ public sealed class PerformanceViewModel : ObservableObject, INavigationAware
 
     public ObservableCollection<SessionHistoryItem> SessionHistory { get; } = [];
 
+    // ----- Bottleneck -----
+    private string _liveBottleneck = "Start a game to see what limits your performance.";
+    private string _resultBottleneckTitle = string.Empty;
+    private string _resultBottleneckText = string.Empty;
+    private string _gpuFanText = Format.Dash;
+
+    public string LiveBottleneck { get => _liveBottleneck; private set => SetProperty(ref _liveBottleneck, value); }
+
+    public string ResultBottleneckTitle { get => _resultBottleneckTitle; private set => SetProperty(ref _resultBottleneckTitle, value); }
+
+    public string ResultBottleneckText { get => _resultBottleneckText; private set => SetProperty(ref _resultBottleneckText, value); }
+
+    public string GpuFanText { get => _gpuFanText; private set => SetProperty(ref _gpuFanText, value); }
+
+    // ----- Performance report (before / after) -----
+    private SessionChoice? _compareBefore;
+    private SessionChoice? _compareAfter;
+    private string _compareBeforeFps = Format.Dash;
+    private string _compareAfterFps = Format.Dash;
+    private string _compareSummary = string.Empty;
+    private string _compareWarning = string.Empty;
+
+    public ObservableCollection<SessionChoice> SessionChoices { get; } = [];
+
+    public ObservableCollection<ComparisonRowViewModel> ComparisonRows { get; } = [];
+
+    public bool CanCompare => SessionChoices.Count >= 2;
+
+    public bool CannotCompare => !CanCompare;
+
+    public SessionChoice? CompareBefore
+    {
+        get => _compareBefore;
+        set
+        {
+            if (SetProperty(ref _compareBefore, value))
+            {
+                UpdateComparison();
+            }
+        }
+    }
+
+    public SessionChoice? CompareAfter
+    {
+        get => _compareAfter;
+        set
+        {
+            if (SetProperty(ref _compareAfter, value))
+            {
+                UpdateComparison();
+            }
+        }
+    }
+
+    public string CompareBeforeFps { get => _compareBeforeFps; private set => SetProperty(ref _compareBeforeFps, value); }
+
+    public string CompareAfterFps { get => _compareAfterFps; private set => SetProperty(ref _compareAfterFps, value); }
+
+    public string CompareSummary { get => _compareSummary; private set => SetProperty(ref _compareSummary, value); }
+
+    public string CompareWarning
+    {
+        get => _compareWarning;
+        private set
+        {
+            if (SetProperty(ref _compareWarning, value))
+            {
+                OnPropertyChanged(nameof(HasCompareWarning));
+            }
+        }
+    }
+
+    public bool HasCompareWarning => CompareWarning.Length > 0;
+
+    private void UpdateComparison()
+    {
+        ComparisonRows.Clear();
+        if (CompareBefore is not { } before || CompareAfter is not { } after || ReferenceEquals(before, after))
+        {
+            CompareSummary = "Choose two different tests to compare.";
+            CompareBeforeFps = CompareAfterFps = Format.Dash;
+            CompareWarning = string.Empty;
+            return;
+        }
+
+        var comparison = SessionComparer.Compare(before.Result, after.Result);
+        CompareBeforeFps = before.Result.Frames is { } bf ? bf.AverageFps.ToString("0", CultureInfo.CurrentCulture) : Format.Dash;
+        CompareAfterFps = after.Result.Frames is { } af ? af.AverageFps.ToString("0", CultureInfo.CurrentCulture) : Format.Dash;
+        foreach (var row in comparison.Rows)
+        {
+            ComparisonRows.Add(new ComparisonRowViewModel(row));
+        }
+
+        CompareSummary = comparison.Summary;
+        CompareWarning = string.Join(" ", comparison.Warnings);
+    }
+
     public bool HasSessionHistory => SessionHistory.Count > 0;
 
     public RelayCommand ToggleOverlayCommand { get; } = new(App.ToggleOverlay);
@@ -148,7 +271,28 @@ public sealed class PerformanceViewModel : ObservableObject, INavigationAware
             SessionHistory.Add(new SessionHistoryItem(item));
         }
 
+        SessionChoices.Clear();
+        foreach (var item in history.Take(20))
+        {
+            SessionChoices.Add(new SessionChoice(item));
+        }
+
+        // Default report: newest test vs. the previous test of the same application.
+        if (SessionChoices.Count >= 2)
+        {
+            var newest = SessionChoices[0];
+            var previous = SessionChoices.Skip(1).FirstOrDefault(c => string.Equals(c.Result.ProcessName, newest.Result.ProcessName, StringComparison.OrdinalIgnoreCase))
+                           ?? SessionChoices[1];
+            _compareAfter = newest;
+            _compareBefore = previous;
+            OnPropertyChanged(nameof(CompareAfter));
+            OnPropertyChanged(nameof(CompareBefore));
+            UpdateComparison();
+        }
+
         OnPropertyChanged(nameof(HasSessionHistory));
+        OnPropertyChanged(nameof(CanCompare));
+        OnPropertyChanged(nameof(CannotCompare));
     }
 
     public AsyncRelayCommand StartSessionCommand { get; }
@@ -377,7 +521,13 @@ public sealed class PerformanceViewModel : ObservableObject, INavigationAware
         GpuTempText = s.GpuTemperatureCelsius is { } gt ? Format.Celsius(gt) : Format.Unavailable;
         ProcessCountText = s.ProcessCount > 0 ? s.ProcessCount.ToString(CultureInfo.CurrentCulture) : Format.Dash;
 
+        GpuFanText = s.GpuFanRpm is { } rpm ? $"{rpm:N0} RPM" : Format.Unavailable;
+
         var history = _monitor.GetHistory();
+        var lastTen = history.Skip(Math.Max(0, history.Count - 10)).ToList();
+        LiveBottleneck = lastTen.Count(x => x.Fps.HasValue) >= 5
+            ? BottleneckAnalyzer.Analyze(lastTen) is var live ? $"{live.Title} — {live.Explanation}" : string.Empty
+            : "Start a game to see what limits your performance.";
         var recent = history.Skip(Math.Max(0, history.Count - ChartPoints)).ToList();
         FpsHistory = recent.Select(x => x.Fps ?? 0).ToList();
         FrameTimeHistory = recent.Select(x => x.FrameTimeMs ?? 0).ToList();
@@ -428,6 +578,8 @@ public sealed class PerformanceViewModel : ObservableObject, INavigationAware
         ResultCpu = r.Cpu.Average is { } c ? $"{Format.Percent(c)} avg · {Format.Percent(r.Cpu.Max)} peak" : Format.Unavailable;
         ResultGpu = r.Gpu.Average is { } g ? $"{Format.Percent(g)} avg · {Format.Percent(r.Gpu.Max)} peak" : Format.Unavailable;
         ResultRam = r.Ram.Average is { } m ? $"{Format.Percent(m)} avg · {Format.Percent(r.Ram.Max)} peak" : Format.Unavailable;
+        ResultBottleneckTitle = r.BottleneckTitle is { } bt ? $"Limiting factor: {bt}" : string.Empty;
+        ResultBottleneckText = r.BottleneckExplanation ?? string.Empty;
         ResultInsights.Clear();
         foreach (var insight in r.Insights)
         {

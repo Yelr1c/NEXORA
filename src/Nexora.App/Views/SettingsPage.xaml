@@ -68,6 +68,8 @@
                     <ToggleSwitch Header="Keep monitoring while NEXORA is in the tray" IsOn="{x:Bind ViewModel.MonitorInBackground, Mode=TwoWay}" />
                     <ToggleSwitch Header="Capture FPS from DirectX games (requires administrator)" IsOn="{x:Bind ViewModel.FpsCaptureEnabled, Mode=TwoWay}" />
                     <ToggleSwitch Header="Show in-game performance overlay (Ctrl+Shift+F10)" IsOn="{x:Bind ViewModel.OverlayEnabled, Mode=TwoWay}" />
+                    <ToggleSwitch Header="Smart game detection (follow games from your profiles automatically)" IsOn="{x:Bind ViewModel.SmartGameDetection, Mode=TwoWay}" />
+                    <ToggleSwitch Header="Turn on Game Boost automatically when a game starts" IsOn="{x:Bind ViewModel.AutoBoostOnGameStart, Mode=TwoWay}" />
                     <TextBlock Style="{StaticResource BodySubtleStyle}" FontSize="12" Text="The overlay stays on top of borderless and windowed games. Exclusive fullscreen games draw over it — switch the game to borderless to see it." />
                     <TextBlock Style="{StaticResource BodySubtleStyle}" FontSize="12" Text="When hidden, NEXORA samples every 5 seconds — or stops sampling entirely if background monitoring is off — to stay lightweight." />
                 </StackPanel>

@@ -69,6 +69,9 @@ public interface IPowerManager
     bool IsOverlaySupported { get; }
 
     void SetActiveOverlay(Guid overlay);
+
+    /// <summary>Battery presence and whether the PC currently runs on battery; null when unknown.</summary>
+    (bool HasBattery, bool OnBattery)? GetBatteryStatus() => null;
 }
 
 public static class PowerSchemes

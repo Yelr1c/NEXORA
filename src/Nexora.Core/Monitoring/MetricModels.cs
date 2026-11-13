@@ -17,6 +17,8 @@ public sealed record MetricSnapshot
 
     public double? GpuTemperatureCelsius { get; init; }
 
+    public int? GpuFanRpm { get; init; }
+
     public long? VramUsedBytes { get; init; }
 
     public long? VramTotalBytes { get; init; }

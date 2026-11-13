@@ -231,3 +231,28 @@ public class SystemDetectionTests
         Assert.Null(tracker.Update(1, start.AddMinutes(1), TimeSpan.FromSeconds(1), t0.AddSeconds(2)));
     }
 }
+
+public class GameMatcherTests
+{
+    [Fact]
+    public void IndexesGameProcessesButNeverLaunchers()
+    {
+        var index = GameProcessMatcher.BuildIndex([
+            new GameProfile { Name = "VALORANT", ExecutablePath = @"C:\Riot Games\Riot Client\RiotClientServices.exe", ProcessName = "VALORANT-Win64-Shipping" },
+            new GameProfile { Name = "Launcher only", ExecutablePath = @"C:\Riot Games\Riot Client\RiotClientServices.exe" },
+            new GameProfile { Name = "CS2", ExecutablePath = @"D:\Steam\cs2.exe" },
+        ]);
+        Assert.True(index.ContainsKey("valorant-win64-shipping"));
+        Assert.True(index.ContainsKey("cs2"));
+        Assert.False(index.ContainsKey("RiotClientServices"));
+        Assert.Equal(2, index.Count);
+    }
+
+    [Fact]
+    public void MergeFillsProcessNameFromDetection()
+    {
+        var merged = GameProfileStore.Merge([new GameProfile { Name = "VALORANT", Source = GameSource.Riot, StoreId = "valorant.live" }],
+            [new DetectedGame("VALORANT", GameSource.Riot, null, "dir", "valorant.live", null, null, "VALORANT-Win64-Shipping")]);
+        Assert.Equal("VALORANT-Win64-Shipping", merged.Single().ProcessName);
+    }
+}

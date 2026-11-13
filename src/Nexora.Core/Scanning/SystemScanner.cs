@@ -18,7 +18,10 @@ public enum FindingSeverity
 
 public sealed record ScanFinding(string Area, FindingSeverity Severity, string Title, string Detail);
 
-public sealed record ScanRecommendation(IOptimization Optimization, OptimizationState State);
+public sealed record ScanRecommendation(IOptimization Optimization, OptimizationState State, Advice? Advice = null)
+{
+    public bool IsRecommended => Advice?.Recommended ?? true;
+}
 
 public sealed class ScanReport
 {
@@ -32,11 +35,13 @@ public sealed class ScanReport
 
     public SystemInfo? System { get; init; }
 
-    public int HighImpactCount => Recommendations.Count(r => r.Optimization.Impact == ImpactLevel.High);
+    public int HighImpactCount => Recommendations.Count(r => r.IsRecommended && r.Optimization.Impact == ImpactLevel.High);
 
-    public int MediumImpactCount => Recommendations.Count(r => r.Optimization.Impact == ImpactLevel.Medium);
+    public int MediumImpactCount => Recommendations.Count(r => r.IsRecommended && r.Optimization.Impact == ImpactLevel.Medium);
 
-    public int LowImpactCount => Recommendations.Count(r => r.Optimization.Impact == ImpactLevel.Low);
+    public int LowImpactCount => Recommendations.Count(r => r.IsRecommended && r.Optimization.Impact == ImpactLevel.Low);
+
+    public int RecommendedCount => Recommendations.Count(r => r.IsRecommended);
 }
 
 public sealed record ScanProgress(int StepIndex, int StepCount, string StepName, double Fraction);
@@ -49,6 +54,7 @@ public sealed class SystemScanner(
     IProcessService processes,
     IPinger pinger,
     INetworkInfoProvider networkInfo,
+    Platform.IPowerManager powerManager,
     ILogger<SystemScanner> logger,
     TimeProvider? time = null)
 {
@@ -186,6 +192,23 @@ public sealed class SystemScanner(
         }
 
         Report(7);
+        NetworkAdapterInfo? adapterForAdvice = null;
+        try
+        {
+            adapterForAdvice = networkInfo.GetActiveAdapter();
+        }
+        catch (Exception ex) when (ex is not OperationCanceledException)
+        {
+            logger.LogDebug(ex, "Adapter unavailable for advisor");
+        }
+
+        var battery = powerManager.GetBatteryStatus();
+        var advisorContext = new AdvisorContext(
+            HasDedicatedGpu: info is null ? null : info.PrimaryGpu is { DedicatedMemoryBytes: > 512L * 1024 * 1024 },
+            HasBattery: battery?.HasBattery,
+            OnBattery: battery?.OnBattery,
+            SystemDriveFreePercent: systemDrive?.FreePercent,
+            IsWifi: adapterForAdvice is null ? null : adapterForAdvice.Kind == AdapterKind.WiFi);
         var settingItems = catalog.StaticOptimizations.Where(o => o.Kind == OptimizationKind.Setting && states.TryGetValue(o.Id, out var s) && s.Status != OptimizationStatus.Unavailable).ToList();
         var applied = settingItems.Count(o => states[o.Id].Status == OptimizationStatus.Applied);
         inputs = inputs with { RecommendedSettingsTotal = settingItems.Count, RecommendedSettingsApplied = applied };
@@ -193,7 +216,7 @@ public sealed class SystemScanner(
         {
             if (states.TryGetValue(optimization.Id, out var state) && state.Status == OptimizationStatus.NotApplied)
             {
-                recommendations.Add(new ScanRecommendation(optimization, state));
+                recommendations.Add(new ScanRecommendation(optimization, state, OptimizationAdvisor.Evaluate(optimization, advisorContext)));
             }
         }
 
@@ -255,7 +278,7 @@ public sealed class SystemScanner(
             CompletedAt = _time.GetUtcNow(),
             Score = score,
             Findings = findings,
-            Recommendations = recommendations.OrderByDescending(r => r.Optimization.Impact).ThenBy(r => r.Optimization.Risk).ToList(),
+            Recommendations = recommendations.OrderByDescending(r => r.IsRecommended).ThenByDescending(r => r.Optimization.Impact).ThenBy(r => r.Optimization.Risk).ToList(),
             System = info,
         };
         progress?.Report(new ScanProgress(Steps.Count, Steps.Count, "Complete", 1));

@@ -85,7 +85,7 @@
                         <Grid>
                             <StackPanel Spacing="2">
                                 <TextBlock Style="{StaticResource SectionTitleStyle}" Text="Potential improvements" />
-                                <TextBlock Style="{StaticResource BodySubtleStyle}" Text="Choose what to apply. Low-risk items are pre-selected; nothing is applied until you confirm." />
+                                <TextBlock Style="{StaticResource BodySubtleStyle}" Text="NEXORA's advisor only pre-selects changes that make sense for your hardware. Optional items are personal preferences. Nothing is applied until you confirm." />
                             </StackPanel>
                             <Button HorizontalAlignment="Right" VerticalAlignment="Center" Style="{StaticResource PrimaryButtonStyle}" Content="Apply selected" Command="{x:Bind ViewModel.ApplySelectedCommand}" />
                         </Grid>
@@ -110,6 +110,7 @@
                                                 <TextBlock Text="{x:Bind Description}" Style="{StaticResource BodySubtleStyle}" />
                                                 <TextBlock Text="{x:Bind Benefit}" FontSize="12" TextWrapping="WrapWholeWords" />
                                                 <TextBlock Text="{x:Bind Current}" FontSize="12" Foreground="{ThemeResource NexoraSubtleTextBrush}" />
+                                                <TextBlock Text="{x:Bind Reason}" FontSize="12" TextWrapping="WrapWholeWords" Foreground="{StaticResource NexoraAccentBrush}" />
                                                 <TextBlock Text="{x:Bind Note}" FontSize="12" Foreground="{StaticResource NexoraWarningBrush}" />
                                             </StackPanel>
                                             <StackPanel Grid.Column="2" Spacing="6" HorizontalAlignment="Right">

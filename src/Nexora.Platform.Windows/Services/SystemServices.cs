@@ -236,6 +236,38 @@ public sealed class WindowsPowerManager(ILogger<WindowsPowerManager> logger) : I
         }
     }
 
+    public (bool HasBattery, bool OnBattery)? GetBatteryStatus()
+    {
+        if (!GetSystemPowerStatus(out var status))
+        {
+            return null;
+        }
+
+        // BatteryFlag 128 = no system battery, 255 = unknown. ACLineStatus 0 = offline (on battery).
+        if (status.BatteryFlag == 255)
+        {
+            return null;
+        }
+
+        var hasBattery = (status.BatteryFlag & 128) == 0;
+        return (hasBattery, hasBattery && status.ACLineStatus == 0);
+    }
+
+    [StructLayout(LayoutKind.Sequential)]
+    private struct SYSTEM_POWER_STATUS
+    {
+        public byte ACLineStatus;
+        public byte BatteryFlag;
+        public byte BatteryLifePercent;
+        public byte SystemStatusFlag;
+        public uint BatteryLifeTime;
+        public uint BatteryFullLifeTime;
+    }
+
+    [DllImport("kernel32.dll")]
+    [return: MarshalAs(UnmanagedType.Bool)]
+    private static extern bool GetSystemPowerStatus(out SYSTEM_POWER_STATUS status);
+
     private static string ReadName(Guid scheme)
     {
         uint size = 0;
