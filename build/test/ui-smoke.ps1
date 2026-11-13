@@ -56,6 +56,18 @@ function Find([object] $win, [string] $name) {
     $win.FindFirst($Scope::Descendants, (New-Object System.Windows.Automation.PropertyCondition($AE::NameProperty, $name)))
 }
 
+# Like Find, but prefers an element that can actually be clicked (a page title can share a menu item's name).
+function FindClickable([object] $win, [string] $name) {
+    $all = $win.FindAll($Scope::Descendants, (New-Object System.Windows.Automation.PropertyCondition($AE::NameProperty, $name)))
+    foreach ($el in $all) {
+        $pattern = $null
+        if ($el.TryGetCurrentPattern([System.Windows.Automation.InvokePattern]::Pattern, [ref] $pattern) -or
+            $el.TryGetCurrentPattern([System.Windows.Automation.SelectionItemPattern]::Pattern, [ref] $pattern)) { return $el }
+    }
+    if ($all.Count -gt 0) { return $all[0] }
+    return $null
+}
+
 function Click([object] $el) {
     $pattern = $null
     if ($el.TryGetCurrentPattern([System.Windows.Automation.InvokePattern]::Pattern, [ref] $pattern)) { $pattern.Invoke(); return }
@@ -107,7 +119,7 @@ function DialogClick([hashtable] $app, [string] $label, [string] $button, [int] 
 function Step([hashtable] $app, [string] $label, [string] $target, [int] $wait = 4) {
     Write-Host "==> $label"
     if ($app.Process.HasExited) { throw "NEXORA already exited before '$label'" }
-    $el = Find $app.Window $target
+    $el = FindClickable $app.Window $target
     if (-not $el) { $script:failures += "Could not find '$target' for step '$label'"; Write-Host "   (not found)"; return }
     try { Click $el } catch { $script:failures += "Click failed on '$target': $_" }
     Start-Sleep -Seconds $wait
