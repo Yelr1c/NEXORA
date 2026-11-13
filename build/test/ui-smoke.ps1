@@ -30,11 +30,13 @@ Add-Type -Namespace Native -Name Mouse -MemberDefinition @"
 "@
 function MouseClick([object] $el) {
     $r = $el.Current.BoundingRectangle
+    if ($r.IsEmpty -or [double]::IsInfinity($r.X)) { return $false }
     [void][Native.Mouse]::SetCursorPos([int]($r.X + 40), [int]($r.Y + 40))
     Start-Sleep -Milliseconds 200
     [Native.Mouse]::mouse_event(0x0002, 0, 0, 0, [System.UIntPtr]::Zero)
     Start-Sleep -Milliseconds 80
     [Native.Mouse]::mouse_event(0x0004, 0, 0, 0, [System.UIntPtr]::Zero)
+    return $true
 }
 
 Add-Type -Namespace Native -Name Spi -MemberDefinition @"
@@ -161,13 +163,13 @@ try {
 
     # --- Dashboard cards navigate on click --------------------------------------------------
     Step $app 'Dashboard (cards)' 'Dashboard' 4
-    $card = Find $app.Window 'Network latency card'
-    if (-not $card) { $script:failures += 'Dashboard network card not found' }
+    $card = Find $app.Window 'Performance score card'
+    if (-not $card) { $script:failures += 'Dashboard score card not found' }
+    elseif (-not (MouseClick $card)) { $script:failures += 'Dashboard score card is not on screen' }
     else {
-        MouseClick $card
         Start-Sleep -Seconds 3
-        Shot 'card-click-network'
-        if (Find $app.Window 'RUN NETWORK TEST') { Write-Host '   card click opened the Network page' } else { $script:failures += 'Clicking the network card did not open the Network page' }
+        Shot 'card-click-score'
+        if ((Find $app.Window 'Scan again') -or (Find $app.Window 'SCAN MY PC')) { Write-Host '   card click opened the scan page' } else { $script:failures += 'Clicking the score card did not open the scan page' }
     }
 
     # --- Main read-only actions ------------------------------------------------------------
