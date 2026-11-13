@@ -15,6 +15,13 @@ jobs:
       - name: Publish portable build
         shell: pwsh
         run: ./build/publish-unpackaged.ps1 -Platform x64 -NoZip
+      - name: Use a full-HD display (so the multi-column layout is exercised)
+        shell: pwsh
+        continue-on-error: true
+        run: |
+          try { Set-DisplayResolution -Width 1920 -Height 1080 -Force -ErrorAction Stop } catch { Write-Host "Display resolution unchanged: $_" }
+          Add-Type -AssemblyName System.Windows.Forms
+          "Screen: " + [System.Windows.Forms.Screen]::PrimaryScreen.Bounds
       - name: UI click-through test
         shell: pwsh
         env:

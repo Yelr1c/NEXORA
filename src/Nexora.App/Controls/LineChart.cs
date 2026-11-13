@@ -83,7 +83,9 @@ public sealed class LineChart : UserControl
             return;
         }
 
+        // Non-finite values (NaN) mean "not measured" and are left out: the chart never invents data.
         var data = (Values as IEnumerable<double>)?.ToList() ?? [];
+        var measured = data.Where(double.IsFinite).ToList();
         var color = (Stroke as SolidColorBrush)?.Color
                     ?? (Application.Current.Resources.TryGetValue("SystemAccentColor", out var a) && a is Color c ? c : Color.FromArgb(255, 0x1F, 0xB6, 0xFF));
         var gridColor = ActualTheme == ElementTheme.Light ? Color.FromArgb(0x22, 0, 0, 0) : Color.FromArgb(0x22, 0xFF, 0xFF, 0xFF);
@@ -101,30 +103,37 @@ public sealed class LineChart : UserControl
         _line.Points.Clear();
         _glow.Points.Clear();
         _fill.Points.Clear();
-        if (data.Count < 2)
+        if (measured.Count < 2)
         {
             _maxLabel.Text = string.Empty;
             return;
         }
 
-        var max = Maximum > 0 ? Maximum : NiceMax(data.Max());
+        var max = Maximum > 0 ? Maximum : NiceMax(measured.Max());
         var capacity = Math.Max(Capacity, data.Count);
         var step = width / (capacity - 1);
         var offset = (capacity - data.Count) * step;
         const double top = 4;
         var usable = height - top - 1;
 
-        _fill.Points.Add(new Point(offset, height));
+        var first = data.FindIndex(double.IsFinite);
+        var last = data.FindLastIndex(double.IsFinite);
+        _fill.Points.Add(new Point(offset + (first * step), height));
         for (var i = 0; i < data.Count; i++)
         {
-            var v = Math.Clamp(double.IsFinite(data[i]) ? data[i] : 0, 0, max);
+            if (!double.IsFinite(data[i]))
+            {
+                continue;
+            }
+
+            var v = Math.Clamp(data[i], 0, max);
             var point = new Point(offset + (i * step), top + (usable * (1 - (v / max))));
             _line.Points.Add(point);
             _glow.Points.Add(point);
             _fill.Points.Add(point);
         }
 
-        _fill.Points.Add(new Point(offset + ((data.Count - 1) * step), height));
+        _fill.Points.Add(new Point(offset + (last * step), height));
         _line.Stroke = new SolidColorBrush(color);
         _glow.Stroke = new SolidColorBrush(color);
         if (!_revealed)

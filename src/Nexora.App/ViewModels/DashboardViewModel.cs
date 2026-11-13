@@ -428,11 +428,11 @@ public sealed class DashboardViewModel : ObservableObject, INavigationAware
 
         var history = _monitor.GetHistory();
         var recent = history.Skip(Math.Max(0, history.Count - ChartPoints)).ToList();
-        CpuHistory = recent.Select(s => s.CpuUsagePercent ?? 0).ToList();
-        GpuHistory = recent.Select(s => s.GpuUsagePercent ?? 0).ToList();
+        CpuHistory = recent.Select(s => s.CpuUsagePercent ?? double.NaN).ToList();
+        GpuHistory = recent.Select(s => s.GpuUsagePercent ?? double.NaN).ToList();
         RamHistory = recent.Select(s => s.RamUsagePercent).ToList();
-        CpuLong = history.Select(s => s.CpuUsagePercent ?? 0).ToList();
-        GpuLong = history.Select(s => s.GpuUsagePercent ?? 0).ToList();
+        CpuLong = history.Select(s => s.CpuUsagePercent ?? double.NaN).ToList();
+        GpuLong = history.Select(s => s.GpuUsagePercent ?? double.NaN).ToList();
         RamLong = history.Select(s => s.RamUsagePercent).ToList();
         OnPropertyChanged(nameof(GamingHeadline));
     }
@@ -452,6 +452,6 @@ public sealed class DashboardViewModel : ObservableObject, INavigationAware
         PingText = stats.AverageMs is { } avg ? avg.ToString("0", System.Globalization.CultureInfo.CurrentCulture) : "Lost";
         var quality = LatencyStatistics.Classify(stats);
         NetworkDetail = $"{quality} · jitter {Format.Ms(stats.JitterMs)} · loss {stats.PacketLossPercent:0.#}%";
-        PingHistory = _network.GetSamples().TakeLast(ChartPoints).Select(s => s.RoundTripMs ?? 0).ToList();
+        PingHistory = _network.GetSamples().TakeLast(ChartPoints).Select(s => s.RoundTripMs ?? double.NaN).ToList();
     }
 }

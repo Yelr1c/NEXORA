@@ -529,10 +529,10 @@ public sealed class PerformanceViewModel : ObservableObject, INavigationAware
             ? BottleneckAnalyzer.Analyze(lastTen) is var live ? $"{live.Title} — {live.Explanation}" : string.Empty
             : "Start a game to see what limits your performance.";
         var recent = history.Skip(Math.Max(0, history.Count - ChartPoints)).ToList();
-        FpsHistory = recent.Select(x => x.Fps ?? 0).ToList();
-        FrameTimeHistory = recent.Select(x => x.FrameTimeMs ?? 0).ToList();
-        CpuHistory = recent.Select(x => x.CpuUsagePercent ?? 0).ToList();
-        GpuHistory = recent.Select(x => x.GpuUsagePercent ?? 0).ToList();
+        FpsHistory = recent.Select(x => x.Fps ?? double.NaN).ToList();
+        FrameTimeHistory = recent.Select(x => x.FrameTimeMs ?? double.NaN).ToList();
+        CpuHistory = recent.Select(x => x.CpuUsagePercent ?? double.NaN).ToList();
+        GpuHistory = recent.Select(x => x.GpuUsagePercent ?? double.NaN).ToList();
         RamHistory = recent.Select(x => x.RamUsagePercent).ToList();
     }
 

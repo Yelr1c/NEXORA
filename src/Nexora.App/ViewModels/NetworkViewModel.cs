@@ -370,7 +370,7 @@ public sealed class NetworkViewModel : ObservableObject, INavigationAware
             : $"Live: {Format.Ms(stats.AverageMs)} · jitter {Format.Ms(stats.JitterMs)} · loss {stats.PacketLossPercent:0.#}% (last {stats.Sent} probes)";
         if (!IsTesting && _testSamples.Count == 0)
         {
-            LatencyHistory = _monitor.GetSamples().Select(s => s.RoundTripMs ?? 0).ToList();
+            LatencyHistory = _monitor.GetSamples().Select(s => s.RoundTripMs ?? double.NaN).ToList();
         }
     }
 
@@ -435,7 +435,7 @@ public sealed class NetworkViewModel : ObservableObject, INavigationAware
             ProgressText = p.Stage;
             if (p.InternetSample is { } sample)
             {
-                _testSamples.Add(sample.RoundTripMs ?? 0);
+                _testSamples.Add(sample.RoundTripMs ?? double.NaN);
                 LatencyHistory = _testSamples.ToList();
                 Ping = sample.RoundTripMs is { } rtt ? rtt.ToString("0", CultureInfo.CurrentCulture) : "Lost";
             }

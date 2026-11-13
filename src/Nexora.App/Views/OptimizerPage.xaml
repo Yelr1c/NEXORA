@@ -131,7 +131,6 @@
                     </DataTemplate>
                 </ListView.ItemTemplate>
             </ListView>
-            <TextBlock HorizontalAlignment="Right" VerticalAlignment="Center" Text="{x:Bind ViewModel.Summary, Mode=OneWay}" Style="{StaticResource BodySubtleStyle}" />
         </Grid>
 
         <!-- Optimizations -->
