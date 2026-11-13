@@ -17,6 +17,23 @@ New-Item -ItemType Directory -Force $OutDir | Out-Null
 $data = Join-Path $env:LOCALAPPDATA 'NEXORA'
 $script:failures = @()
 
+# Prints a downscaled JPEG of the screen into the log (base64) so reviewers without artifact access can see the UI.
+function ShotToLog([string] $name) {
+    if (-not $env:NEXORA_SCREENSHOTS_TO_LOG) { return }
+    $b = [System.Windows.Forms.Screen]::PrimaryScreen.Bounds
+    $bmp = New-Object System.Drawing.Bitmap $b.Width, $b.Height
+    [System.Drawing.Graphics]::FromImage($bmp).CopyFromScreen($b.Location, [System.Drawing.Point]::Empty, $b.Size)
+    $ms = New-Object System.IO.MemoryStream
+    $codec = [System.Drawing.Imaging.ImageCodecInfo]::GetImageEncoders() | Where-Object { $_.MimeType -eq 'image/jpeg' }
+    $params = New-Object System.Drawing.Imaging.EncoderParameters 1
+    $params.Param[0] = New-Object System.Drawing.Imaging.EncoderParameter ([System.Drawing.Imaging.Encoder]::Quality, [long]82)
+    $bmp.Save($ms, $codec, $params); $bmp.Dispose()
+    $data = [Convert]::ToBase64String($ms.ToArray())
+    Write-Host "SCREENSHOT-BEGIN $name"
+    for ($i = 0; $i -lt $data.Length; $i += 4000) { Write-Host ("SCREENSHOT-DATA " + $data.Substring($i, [Math]::Min(4000, $data.Length - $i))) }
+    Write-Host "SCREENSHOT-END $name"
+}
+
 function Shot([string] $name) {
     $b = [System.Windows.Forms.Screen]::PrimaryScreen.Bounds
     $bmp = New-Object System.Drawing.Bitmap $b.Width, $b.Height
@@ -159,6 +176,12 @@ try {
     # --- Every page ------------------------------------------------------------------------
     foreach ($page in 'Dashboard', 'Performance', 'Network', 'Optimizer', 'Games', 'Processes', 'Settings', 'About') {
         Step $app "Open $page" $page 5
+    }
+
+    # --- Screenshots of the redesigned pages ---------------------------------------------------
+    foreach ($page in 'Dashboard', 'Network', 'Performance', 'Optimizer', 'Settings') {
+        Step $app "View $page" $page 6
+        ShotToLog $page
     }
 
     # --- Dashboard cards navigate on click --------------------------------------------------
